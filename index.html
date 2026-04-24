@@ -1197,53 +1197,46 @@ function buatTeksNota() {
   const noStr = String(nomorTransaksi).padStart(4,'0');
   const namaCustomer = document.getElementById('input-nama').value.trim();
 
-  const line = '────────────────────';
+  const line = '--------------------';
   let nota = '';
   nota += `${TOKO}
 `;
   nota += `${line}
 `;
-  nota += `No      : #${noStr}
+  nota += `No: #${noStr}
 `;
-  nota += `Tgl     : ${waktu}
+  nota += `Tgl: ${waktu}
 `;
-  if (namaCustomer) nota += `Customer: ${namaCustomer}
-`;
-  nota += `${line}
-`;
-  nota += `ITEM                 QTY     SUBTOTAL
+  if (namaCustomer) nota += `Cust: ${namaCustomer}
 `;
   nota += `${line}
 `;
 
   keranjang.forEach(item => {
-    const nama = item.nama.length > 20 ? item.nama.slice(0,20) + '.' : item.nama;
-    const qty = String(item.qty).padEnd(3, ' ');
-    const sub = rp(item.harga * item.qty);
-    nota += `${nama.padEnd(20, ' ')} ${qty} ${sub}
+    const nama = item.nama.length > 18 ? item.nama.slice(0,18) + '.' : item.nama;
+    nota += `${nama}
 `;
-    nota += `${(''+item.qty+' x '+rp(item.harga)).padEnd(20, ' ')}
+    nota += `${item.qty}x ${rp(item.harga)} = ${rp(item.harga * item.qty)}
 `;
   });
 
   nota += `${line}
 `;
-  nota += `TOTAL    : ${rp(total)}
+  nota += `TOTAL: ${rp(total)}
 `;
   if (bayar > 0) {
-    nota += `BAYAR    : ${rp(bayar)}
+    nota += `BAYAR: ${rp(bayar)}
 `;
-    nota += `KEMBALI  : ${rp(kembalian < 0 ? 0 : kembalian)}
+    nota += `KEMBALI: ${rp(kembalian < 0 ? 0 : kembalian)}
 `;
   }
   nota += `${line}
 `;
   nota += `Terima kasih`;
   if (namaCustomer) nota += `, ${namaCustomer}`;
-  nota += `
-`;
   return nota;
 }
+
 
 
 
@@ -1266,14 +1259,17 @@ async function catatDanAksi(aksi) {
     const url = noF
       ? `https://wa.me/${noF}?text=${encodeURIComponent(nota)}`
       : `https://wa.me/?text=${encodeURIComponent(nota)}`;
-    window.open(url, '_blank');
-    siapTransaksiBaru();
+    window.location.assign(url);
+    setTimeout(() => {
+      siapTransaksiBaru();
+    }, 300);
   } else if (aksi === 'simpan') {
     const noStr = String(nomorTransaksi - 1).padStart(4,'0');
     alert('✅ Transaksi #' + noStr + ' berhasil disimpan!');
     siapTransaksiBaru();
   }
 }
+
 
 
 
@@ -1457,14 +1453,15 @@ function renderRiwayat() {
 }
 
 function kirimUlang(id) {
-  const riwayat = JSON.parse(localStorage.getItem('riwayat_sembako') || '[]');
-  const r = riwayat.find(x => x.id === id);
+  const riwayat = window._riwayatCache || [];
+  const r = riwayat.find(x => x.id == id);
   if (!r) return;
-  const no = r.noWa ? r.noWa.replace(/\D/g,'') : '';
-  let noF = no;
-  if (no.startsWith('0')) noF = '62' + no.slice(1);
-  const url = noF ? `https://wa.me/${noF}?text=${encodeURIComponent(r.nota)}` : `https://wa.me/?text=${encodeURIComponent(r.nota)}`;
-  window.open(url, '_blank');
+  const no = (r.noWa || '').replace(/\D/g, '');
+  let noF = no.startsWith('0') ? '62' + no.slice(1) : no;
+  const url = noF
+    ? `https://wa.me/${noF}?text=${encodeURIComponent(r.nota)}`
+    : `https://wa.me/?text=${encodeURIComponent(r.nota)}`;
+  window.location.assign(url);
 }
 
 let detailAktif = null;
@@ -1636,6 +1633,26 @@ async function renderRiwayat() {
   }
   window._riwayatCache = riwayat;
 
+  const filterTanggal = document.getElementById('filter-tanggal')?.value;
+  const filterBulan = document.getElementById('filter-bulan')?.value;
+
+  if (filterTanggal) {
+    riwayat = riwayat.filter(r => {
+      const d = new Date(r.waktu);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}` === filterTanggal;
+    });
+  } else if (filterBulan) {
+    riwayat = riwayat.filter(r => {
+      const d = new Date(r.waktu);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      return `${yyyy}-${mm}` === filterBulan;
+    });
+  }
+
   const hari = new Date().toDateString();
   const totalHari = riwayat
     .filter(r => new Date(r.waktu).toDateString() === hari)
@@ -1659,6 +1676,13 @@ async function renderRiwayat() {
       </div>
     </div>`).join('');
 }
+
+function resetFilterRiwayat() {
+  document.getElementById('filter-tanggal').value = '';
+  document.getElementById('filter-bulan').value = '';
+  renderRiwayat();
+}
+
 
 function lihatDetailRiwayat(id) {
   const r = (window._riwayatCache||[]).find(x => x.id == id);
@@ -1905,10 +1929,13 @@ async function kirimWADariPreview() {
   const url = noF
     ? `https://wa.me/${noF}?text=${encodeURIComponent(nota)}`
     : `https://wa.me/?text=${encodeURIComponent(nota)}`;
-  window.open(url, '_blank');
-  tutupNota();
-  siapTransaksiBaru();
+  window.location.assign(url);
+  setTimeout(() => {
+    tutupNota();
+    siapTransaksiBaru();
+  }, 300);
 }
+
 
 
 
