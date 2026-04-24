@@ -1197,47 +1197,66 @@ function buatTeksNota() {
   const noStr = String(nomorTransaksi).padStart(4,'0');
   const namaCustomer = document.getElementById('input-nama').value.trim();
 
+  const line = '────────────────────';
   let nota = '';
-  nota += `🏪 *${TOKO}*\n`;
-  nota += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  if (namaCustomer) nota += `👤 Yth. *${namaCustomer}*\n`;
-  nota += `🧾 No   : *#${noStr}*\n`;
-  nota += `📅 Tgl  : ${waktu}\n`;
-  nota += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  nota += `*DAFTAR BELANJA*\n\n`;
+  nota += `${TOKO}
+`;
+  nota += `${line}
+`;
+  nota += `No      : #${noStr}
+`;
+  nota += `Tgl     : ${waktu}
+`;
+  if (namaCustomer) nota += `Customer: ${namaCustomer}
+`;
+  nota += `${line}
+`;
+  nota += `ITEM                 QTY     SUBTOTAL
+`;
+  nota += `${line}
+`;
 
-  keranjang.forEach((item, idx) => {
-    nota += `${idx+1}. ${item.nama}\n`;
-    nota += `   ${item.qty} ${item.satuan} × ${rp(item.harga)} = *${rp(item.harga * item.qty)}*\n`;
+  keranjang.forEach(item => {
+    const nama = item.nama.length > 20 ? item.nama.slice(0,20) + '.' : item.nama;
+    const qty = String(item.qty).padEnd(3, ' ');
+    const sub = rp(item.harga * item.qty);
+    nota += `${nama.padEnd(20, ' ')} ${qty} ${sub}
+`;
+    nota += `${(''+item.qty+' x '+rp(item.harga)).padEnd(20, ' ')}
+`;
   });
 
-  nota += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
-  nota += `💰 *TOTAL : ${rp(total)}*\n`;
-
+  nota += `${line}
+`;
+  nota += `TOTAL    : ${rp(total)}
+`;
   if (bayar > 0) {
-    nota += `💵 Bayar  : ${rp(bayar)}\n`;
-    nota += `🔄 Kembali: *${rp(kembalian < 0 ? 0 : kembalian)}*\n`;
+    nota += `BAYAR    : ${rp(bayar)}
+`;
+    nota += `KEMBALI  : ${rp(kembalian < 0 ? 0 : kembalian)}
+`;
   }
-
-  nota += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  if (namaCustomer) nota += `\n🙏 Terima kasih, *${namaCustomer}*!\n`;
-  else nota += `\n🙏 Terima kasih sudah berbelanja!\n`;
-  nota += `✨ _Semoga berkah & bermanfaat_\n`;
-  nota += `\n_${TOKO}_`;
-
+  nota += `${line}
+`;
+  nota += `Terima kasih`;
+  if (namaCustomer) nota += `, ${namaCustomer}`;
+  nota += `
+`;
   return nota;
 }
+
+
 
 // Catat riwayat dulu baru eksekusi aksi
 async function catatDanAksi(aksi) {
   if (keranjang.length === 0) { alert('Keranjang masih kosong!'); return; }
   const nota = buatTeksNota();
 
-  // Semua aksi dicatat ke riwayat
   await simpanRiwayat(nota);
 
   if (aksi === 'preview') {
     lihatNotaVisual();
+    siapTransaksiBaru();
     return;
   }
 
@@ -1255,6 +1274,7 @@ async function catatDanAksi(aksi) {
     siapTransaksiBaru();
   }
 }
+
 
 
 // kirimWA digantikan catatDanAksi
@@ -1891,6 +1911,7 @@ async function kirimWADariPreview() {
 }
 
 
+
 function siapTransaksiBaru() {
   keranjang = [];
   document.getElementById('input-bayar').value = '';
@@ -1902,6 +1923,7 @@ function siapTransaksiBaru() {
   renderKeranjang();
   renderProduk();
 }
+
 
 </script>
 </body>
