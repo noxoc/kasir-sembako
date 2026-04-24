@@ -698,6 +698,42 @@
 .popup-harga-btns button { flex: 1; padding: 11px; border-radius: 10px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; }
 .popup-ok { background: var(--hijau); color: white; }
 .popup-batal { background: var(--bg); color: var(--muted); border: 1.5px solid var(--border) !important; }
+
+/* MODAL INPUT BARANG BARU */
+#modal-barang-baru {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9997;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-barang-box {
+  background: var(--bg);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 16px 32px;
+  width: 100%;
+  max-width: 480px;
+}
+.modal-barang-box h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--hijau);
+  margin-bottom: 14px;
+}
+.modal-barang-box .form-field { margin-bottom: 10px; }
+.modal-barang-box .form-field label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px; color: var(--muted); }
+.modal-barang-box .form-field input {
+  width: 100%;
+  padding: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+.modal-barang-box .form-field input:focus { border-color: var(--hijau); }
 </style>
   <!-- html2pdf untuk export PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -708,6 +744,34 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+
+<!-- MODAL BARANG BARU -->
+<div id="modal-barang-baru" onclick="if(event.target===this)tutupBarangBaru()">
+  <div class="modal-barang-box">
+    <h3>➕ Input Barang Baru</h3>
+    <div class="form-field">
+      <label>Nama Barang</label>
+      <input type="text" id="bb-nama" placeholder="Contoh: Indomie Goreng">
+    </div>
+    <div class="form-field">
+      <label>Harga Jual (Rp)</label>
+      <input type="number" id="bb-harga" placeholder="0" inputmode="numeric">
+    </div>
+    <div class="form-field">
+      <label>Satuan</label>
+      <input type="text" id="bb-satuan" placeholder="pcs / bungkus / kg" value="pcs">
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:12px">
+      <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
+        <input type="checkbox" id="bb-simpan" checked> Simpan ke database produk
+      </label>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" onclick="tutupBarangBaru()" style="flex:1;margin-bottom:0">Batal</button>
+      <button class="btn btn-hijau" onclick="konfirmasiBarangBaru()" style="flex:2;margin-bottom:0">Tambah ke Keranjang</button>
+    </div>
+  </div>
+</div>
 
 <!-- POPUP HARGA -->
 <div id="popup-harga" onclick="if(event.target===this)tutupPopupHarga()">
@@ -762,7 +826,10 @@
     <input type="text" id="cari-produk" placeholder="Cari produk..." oninput="renderProduk()">
     <span class="search-icon">🔍</span>
   </div>
-  <div id="produk-grid" class="produk-grid"></div>
+  <button class="btn btn-outline" onclick="bukaBarangBaru()" style="margin-bottom:8px;font-size:13px">
+  ➕ Input Barang Baru
+</button>
+<div id="produk-grid" class="produk-grid"></div>
   
   <div class="section-title">Keranjang</div>
   <div id="keranjang-list"></div>
@@ -938,27 +1005,23 @@ function renderProduk() {
   const grid = document.getElementById('produk-grid');
 
   if (!q) {
-    // Hanya tampil 4 best seller bulanan
+    // Kosong — tampil best seller saja, tidak ada scroll
     const bs = getBestSeller();
     if (bs.length === 0) {
       grid.innerHTML = `
         <div style="grid-column:1/-1;text-align:center;padding:30px 10px;color:var(--muted)">
-          <div style="font-size:32px;margin-bottom:8px">📊</div>
-          <div style="font-size:13px;font-weight:600">Belum ada data best seller</div>
-          <div style="font-size:12px;margin-top:4px">Gunakan 🔍 search untuk cari produk</div>
+          <div style="font-size:32px;margin-bottom:8px">🔍</div>
+          <div style="font-size:13px;font-weight:600">Ketik nama produk untuk mencari</div>
         </div>`;
     } else {
       grid.innerHTML = `
         <div style="grid-column:1/-1;font-size:11px;font-weight:700;color:var(--emas);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">
           ⭐ Best Seller Bulan Ini
         </div>
-        ${bs.map(p => produkCard(p, true)).join('')}
-        <div style="grid-column:1/-1;text-align:center;padding:10px 0;font-size:12px;color:var(--muted)">
-          Ketik nama produk di 🔍 untuk cari semua produk
-        </div>`;
+        ${bs.map(p => produkCard(p, true)).join('')}`;
     }
   } else {
-    // Search mode — tampil semua hasil pencarian
+    // Search mode — tampil hasil pencarian
     const filtered = produkList.filter(p => p.nama.toLowerCase().includes(q));
     if (filtered.length === 0) {
       grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px">Produk tidak ditemukan</div>`;
@@ -967,6 +1030,7 @@ function renderProduk() {
     }
   }
 }
+
 
 
 function produkCard(p, isBestSeller) {
@@ -1011,6 +1075,7 @@ function tambahKeranjang(id) {
   if (!p) return;
   // Reset search bar setelah pilih produk
   document.getElementById('cari-produk').value = '';
+  renderProduk();
 
   if (!p.harga || p.harga === 0) {
     // Tampilkan popup isi harga
@@ -1760,6 +1825,44 @@ function doLogout() {
 
 // Cek session saat load
 cekSession();
+
+
+// ============ INPUT BARANG BARU ============
+function bukaBarangBaru() {
+  document.getElementById('bb-nama').value = '';
+  document.getElementById('bb-harga').value = '';
+  document.getElementById('bb-satuan').value = 'pcs';
+  document.getElementById('bb-simpan').checked = true;
+  document.getElementById('modal-barang-baru').style.display = 'flex';
+  setTimeout(() => document.getElementById('bb-nama').focus(), 100);
+}
+
+function tutupBarangBaru() {
+  document.getElementById('modal-barang-baru').style.display = 'none';
+}
+
+function konfirmasiBarangBaru() {
+  const nama = document.getElementById('bb-nama').value.trim();
+  const harga = parseInt(document.getElementById('bb-harga').value) || 0;
+  const satuan = document.getElementById('bb-satuan').value.trim() || 'pcs';
+  const simpan = document.getElementById('bb-simpan').checked;
+
+  if (!nama) { alert('Nama barang harus diisi!'); return; }
+  if (harga <= 0) { alert('Harga harus diisi!'); return; }
+
+  const id = 'manual_' + Date.now();
+  const produkBaru = { id, nama, harga, satuan };
+
+  if (simpan) {
+    produkList.push(produkBaru);
+    simpanProdukLS();
+  }
+
+  // Langsung tambah ke keranjang
+  keranjang.push({ ...produkBaru, qty: 1 });
+  renderKeranjang();
+  tutupBarangBaru();
+}
 
 </script>
 </body>
