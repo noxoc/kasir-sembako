@@ -1009,6 +1009,9 @@ function getBestSeller() {
 function tambahKeranjang(id) {
   const p = produkList.find(x => x.id === id);
   if (!p) return;
+  // Reset search bar setelah pilih produk
+  document.getElementById('cari-produk').value = '';
+
   if (!p.harga || p.harga === 0) {
     // Tampilkan popup isi harga
     window._pendingProdukId = id;
@@ -1047,6 +1050,8 @@ function konfirmasiHarga() {
   if (ada) ada.qty++;
   else keranjang.push({...p, harga, qty: 1});
 
+  document.getElementById('cari-produk').value = '';
+  renderProduk();
   tutupPopupHarga();
   renderKeranjang();
 }
