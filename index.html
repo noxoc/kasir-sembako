@@ -854,9 +854,11 @@
       <label>No. WhatsApp Pembeli (opsional)</label>
       <input type="tel" id="input-wa" placeholder="Contoh: 08123456789" inputmode="numeric">
     </div>
-    <button class="btn btn-wa" onclick="kirimWA()">📤 Kirim Nota ke WhatsApp</button>
-    <button class="btn btn-outline" onclick="lihatNota()">👁 Preview Nota</button>
-    <button class="btn btn-reset" onclick="resetKeranjang()">🗑 Reset / Transaksi Baru</button>
+    <button class="btn btn-wa" onclick="catatDanAksi('wa')">📤 Kirim Nota ke WhatsApp</button>
+    <button class="btn btn-wa" onclick="catatDanAksi('wa')" style="margin-bottom:8px">📲 Kirim Nota ke WhatsApp</button>
+    <button class="btn btn-hijau" onclick="catatDanAksi('simpan')" style="margin-bottom:8px">💾 Simpan Transaksi</button>
+    <button class="btn btn-outline" onclick="catatDanAksi('preview')" style="margin-bottom:8px">👁️ Preview Nota</button>
+    <button class="btn btn-reset" onclick="resetKeranjang()">🗑️ Reset / Transaksi Baru</button>
   </div>
   <div id="keranjang-empty" class="keranjang-empty">
     <div class="icon">🛒</div>
@@ -963,7 +965,7 @@
       </div>
       <span class="struk-zigzag-bottom"></span>
     </div>
-    <button class="btn btn-wa" onclick="kirimWA()">📤 Kirim ke WhatsApp</button>
+    <button class="btn btn-wa" onclick="catatDanAksi('wa')">📤 Kirim ke WhatsApp</button>
     <button class="btn btn-outline" onclick="tutupNota()">Tutup</button>
   </div>
 </div>
@@ -1196,60 +1198,63 @@ function buatTeksNota() {
   const noStr = String(nomorTransaksi).padStart(4,'0');
   const namaCustomer = document.getElementById('input-nama').value.trim();
 
-  const LINE = '```';
   let nota = '';
+  nota += `🏪 *${TOKO}*\n`;
+  nota += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  if (namaCustomer) nota += `👤 Yth. *${namaCustomer}*\n`;
+  nota += `🧾 No   : *#${noStr}*\n`;
+  nota += `📅 Tgl  : ${waktu}\n`;
+  nota += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  nota += `*DAFTAR BELANJA*\n\n`;
 
-  nota += `🛒 *${TOKO}*\n`;
-  nota += `_Nota Pembelian_\n\n`;
-  if (namaCustomer) nota += `Yth. *${namaCustomer}*\n`;
-  nota += `No  : *#${noStr}*\n`;
-  nota += `Tgl : ${waktu}\n`;
-  nota += `\n`;
-
-  nota += LINE + `\n`;
-  nota += `Item             Jml   Total\n`;
-  nota += `─────────────────────────────\n`;
-  keranjang.forEach(item => {
-    const nama = item.nama.length > 16 ? item.nama.slice(0,15)+'.' : item.nama;
-    const jml = `${item.qty}x`;
-    const sub = rp(item.harga * item.qty).replace('Rp ','');
-    nota += `${pad(nama,17)}${pad(jml,6)}${sub}\n`;
+  keranjang.forEach((item, idx) => {
+    nota += `${idx+1}. ${item.nama}\n`;
+    nota += `   ${item.qty} ${item.satuan} × ${rp(item.harga)} = *${rp(item.harga * item.qty)}*\n`;
   });
-  nota += `─────────────────────────────\n`;
-  const totalStr = rp(total).replace('Rp ','');
-  nota += `${pad('TOTAL',17)}${pad('',6)}${totalStr}\n`;
-  if (bayar > 0) {
-    const bayarStr = rp(bayar).replace('Rp ','');
-    const kembStr = rp(kembalian < 0 ? 0 : kembalian).replace('Rp ','');
-    nota += `─────────────────────────────\n`;
-    nota += `${pad('Bayar',17)}${pad('',6)}${bayarStr}\n`;
-    nota += `${pad('Kembali',17)}${pad('',6)}${kembStr}\n`;
-  }
-  nota += LINE + `\n\n`;
 
-  if (namaCustomer) nota += `Terima kasih, *${namaCustomer}* 🙏\n`;
-  else nota += `Terima kasih sudah berbelanja 🙏\n`;
-  nota += `_Semoga berkah & bermanfaat_ ✨`;
+  nota += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
+  nota += `💰 *TOTAL : ${rp(total)}*\n`;
+
+  if (bayar > 0) {
+    nota += `💵 Bayar  : ${rp(bayar)}\n`;
+    nota += `🔄 Kembali: *${rp(kembalian < 0 ? 0 : kembalian)}*\n`;
+  }
+
+  nota += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  if (namaCustomer) nota += `\n🙏 Terima kasih, *${namaCustomer}*!\n`;
+  else nota += `\n🙏 Terima kasih sudah berbelanja!\n`;
+  nota += `✨ _Semoga berkah & bermanfaat_\n`;
+  nota += `\n_${TOKO}_`;
+
   return nota;
 }
 
-function kirimWA() {
+// Catat riwayat dulu baru eksekusi aksi
+async function catatDanAksi(aksi) {
   if (keranjang.length === 0) { alert('Keranjang masih kosong!'); return; }
   const nota = buatTeksNota();
-  const noWa = document.getElementById('input-wa').value.replace(/\D/g, '');
-  let noFormatted = noWa;
-  if (noWa.startsWith('0')) noFormatted = '62' + noWa.slice(1);
-  const url = noFormatted
-    ? `https://wa.me/${noFormatted}?text=${encodeURIComponent(nota)}`
-    : `https://wa.me/?text=${encodeURIComponent(nota)}`;
-  simpanRiwayat(nota);
-  window.open(url, '_blank');
-  nomorTransaksi++;
-  localStorage.setItem('no_transaksi', nomorTransaksi);
-  tutupNota();
+  await simpanRiwayat(nota); // catat ke Firebase
+  if (aksi === 'wa') {
+    const noWa = document.getElementById('input-wa').value.replace(/\D/g, '');
+    let noF = noWa.startsWith('0') ? '62' + noWa.slice(1) : noWa;
+    const url = noF
+      ? `https://wa.me/${noF}?text=${encodeURIComponent(nota)}`
+      : `https://wa.me/?text=${encodeURIComponent(nota)}`;
+    window.open(url, '_blank');
+    resetKeranjang();
+  } else if (aksi === 'simpan') {
+    alert('✅ Transaksi #' + String(nomorTransaksi-1).padStart(4,'0') + ' berhasil disimpan!');
+    resetKeranjang();
+  } else if (aksi === 'preview') {
+    lihatNotaVisual();
+  }
 }
 
-function lihatNota() {
+
+// kirimWA digantikan catatDanAksi
+
+
+function lihatNotaVisual() {
   if (keranjang.length === 0) { alert('Keranjang masih kosong!'); return; }
   const total = keranjang.reduce((s, x) => s + x.harga * x.qty, 0);
   const bayar = parseInt(document.getElementById('input-bayar').value || 0);
