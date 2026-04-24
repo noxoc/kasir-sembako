@@ -801,7 +801,7 @@
 <div id="page-produk" class="page">
   <button class="btn btn-hijau" onclick="toggleFormTambah()" style="margin-bottom:10px">+ Tambah Produk</button>
   <button class="btn btn-outline" onclick="document.getElementById('import-xlsx').click()" style="margin-bottom:8px">📂 Import Database XLSX (iPos)</button>
-  <button class="btn btn-reset" onclick="resetProdukDefault()" style="margin-bottom:8px">🔄 Reset Produk ke Default</button>
+  <button class="btn btn-reset" onclick="resetProdukDefault()" style="margin-bottom:8px">🗑️ Hapus Semua Produk</button>
   <input type="file" id="import-xlsx" accept=".xlsx" style="display:none" onchange="importXLSX(this)">
   <div id="form-tambah" class="form-tambah" style="display:none">
     <h3 id="form-judul">Tambah Produk Baru</h3>
@@ -1636,12 +1636,18 @@ function importXLSX(input) {
 
 // ============ RESET PRODUK ============
 async function resetProdukDefault() {
-  if (!confirm('Reset semua produk ke data default dari XLSX?\nProduk yang sudah ditambah manual akan hilang!')) return;
-  produkList = [...PRODUK_DEFAULT];
-  simpanProdukLS();
+  if (!confirm('⚠️ HAPUS SEMUA PRODUK?\nSemua data produk akan dihapus permanen dari Firebase.\nLanjutkan?')) return;
+  try {
+    const snap = await db.collection('produk').get();
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  } catch(e) {}
+  produkList = [];
+  localStorage.removeItem('produksembako');
   renderProduk();
   renderProdukManager();
-  alert('✅ Produk berhasil direset ke default (' + produkList.length + ' produk)');
+  alert('✅ Semua produk berhasil dihapus.');
 }
 
 // ============ SIMPAN PDF ============
