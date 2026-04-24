@@ -1450,10 +1450,19 @@ async function loadProdukFS() {
   try {
     const snap = await db.collection('produk').get();
     if (!snap.empty) {
+      // Ada data di Firebase, pakai itu
       produkList = snap.docs.map(d => d.data());
     } else {
-      produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
-      await uploadProdukFS();
+      // Firebase kosong — cek apakah memang sengaja dikosongkan
+      const sudahDireset = localStorage.getItem('produk_direset');
+      if (sudahDireset === 'true') {
+        // Sengaja dikosongkan, jangan upload default
+        produkList = [];
+      } else {
+        // Belum pernah diisi, upload default pertama kali
+        produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
+        await uploadProdukFS();
+      }
     }
   } catch(e) {
     produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
@@ -1461,6 +1470,7 @@ async function loadProdukFS() {
   renderProduk();
   renderProdukManager();
 }
+
 
 async function uploadProdukFS() {
   const batch = db.batch();
@@ -1473,6 +1483,7 @@ async function uploadProdukFS() {
 // Override simpanProdukLS agar juga simpan ke Firebase
 function simpanProdukLS() {
   localStorage.setItem('produksembako', JSON.stringify(produkList));
+  localStorage.setItem('produk_direset', 'false');
   try {
     uploadProdukFS();
   } catch(e) {}
@@ -1646,6 +1657,7 @@ async function resetProdukDefault() {
   // Kosongkan dulu langsung
   produkList = [];
   localStorage.removeItem('produksembako');
+  localStorage.setItem('produk_direset', 'true');
   renderProduk();
   renderProdukManager();
 
