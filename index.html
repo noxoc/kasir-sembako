@@ -1956,4 +1956,39 @@ function siapTransaksiBaru() {
 </body>
 </html>
 
-<!-- Import harga jual dari kolom H / HARGAJUAL -->
+
+async function hapusDataProdukLokalDanFirebase(id){
+  try {
+    if (typeof db !== 'undefined' && db && typeof deleteDoc === 'function' && typeof doc === 'function') {
+      await deleteDoc(doc(db, 'produk', id));
+    }
+  } catch (e) {}
+  try {
+    produkList = produkList.filter(x => x.id !== id);
+    localStorage.setItem('produksembako', JSON.stringify(produkList));
+  } catch (e) {}
+  try {
+    if (typeof renderProdukManager === 'function') renderProdukManager();
+    if (typeof renderProduk === 'function') renderProduk();
+  } catch (e) {}
+}
+
+async function hapusSemuaProdukLokalDanFirebase(){
+  try {
+    if (typeof db !== 'undefined' && db && typeof getDocs === 'function' && typeof collection === 'function' && typeof deleteDoc === 'function' && typeof doc === 'function') {
+      const snap = await getDocs(collection(db, 'produk'));
+      await Promise.all(snap.docs.map(d => deleteDoc(doc(db, 'produk', d.id))));
+    }
+  } catch (e) {}
+  try {
+    localStorage.removeItem('produksembako');
+    localStorage.removeItem('riwayatsembako');
+    localStorage.removeItem('notransaksi');
+  } catch (e) {}
+  try { produkList = []; } catch (e) {}
+  try {
+    if (typeof renderProdukManager === 'function') renderProdukManager();
+    if (typeof renderProduk === 'function') renderProduk();
+    if (typeof renderRiwayat === 'function') renderRiwayat();
+  } catch (e) {}
+}
