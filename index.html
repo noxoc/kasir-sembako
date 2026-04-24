@@ -854,7 +854,6 @@
       <label>No. WhatsApp Pembeli (opsional)</label>
       <input type="tel" id="input-wa" placeholder="Contoh: 08123456789" inputmode="numeric">
     </div>
-    <button class="btn btn-wa" onclick="catatDanAksi('wa')">📤 Kirim Nota ke WhatsApp</button>
     <button class="btn btn-wa" onclick="catatDanAksi('wa')" style="margin-bottom:8px">📲 Kirim Nota ke WhatsApp</button>
     <button class="btn btn-hijau" onclick="catatDanAksi('simpan')" style="margin-bottom:8px">💾 Simpan Transaksi</button>
     <button class="btn btn-outline" onclick="catatDanAksi('preview')" style="margin-bottom:8px">👁️ Preview Nota</button>
@@ -912,7 +911,7 @@
   <div class="nota-box" onclick="event.stopPropagation()">
     <div class="nota-box-header">
       <h2 id="detail-judul">Detail Transaksi</h2>
-      <button class="close-btn" onclick="tutupDetail()">✕</button>
+      <button class="close-btn" onclick="tutupDetail()" style="font-size:18px;font-weight:700">✕</button>
     </div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Salin teks di bawah untuk diinput manual di komputer:</p>
     <div class="salin-box" id="detail-teks"></div>
@@ -927,7 +926,7 @@
   <div class="nota-box" onclick="event.stopPropagation()">
     <div class="nota-box-header">
       <h2>Preview Nota</h2>
-      <button class="close-btn" onclick="tutupNota()">✕</button>
+      <button class="close-btn" onclick="tutupNota()" style="font-size:18px;font-weight:700">✕</button>
     </div>
     <div class="struk">
       <span class="struk-zigzag-top"></span>
@@ -965,7 +964,7 @@
       </div>
       <span class="struk-zigzag-bottom"></span>
     </div>
-    <button class="btn btn-wa" onclick="catatDanAksi('wa')">📤 Kirim ke WhatsApp</button>
+    <button class="btn btn-wa" onclick="kirimWADariPreview()">📤 Kirim ke WhatsApp</button>
     <button class="btn btn-outline" onclick="tutupNota()">Tutup</button>
   </div>
 </div>
@@ -1233,7 +1232,15 @@ function buatTeksNota() {
 async function catatDanAksi(aksi) {
   if (keranjang.length === 0) { alert('Keranjang masih kosong!'); return; }
   const nota = buatTeksNota();
-  await simpanRiwayat(nota); // catat ke Firebase
+
+  // Semua aksi dicatat ke riwayat
+  await simpanRiwayat(nota);
+
+  if (aksi === 'preview') {
+    lihatNotaVisual();
+    return;
+  }
+
   if (aksi === 'wa') {
     const noWa = document.getElementById('input-wa').value.replace(/\D/g, '');
     let noF = noWa.startsWith('0') ? '62' + noWa.slice(1) : noWa;
@@ -1241,12 +1248,11 @@ async function catatDanAksi(aksi) {
       ? `https://wa.me/${noF}?text=${encodeURIComponent(nota)}`
       : `https://wa.me/?text=${encodeURIComponent(nota)}`;
     window.open(url, '_blank');
-    resetKeranjang();
+    siapTransaksiBaru();
   } else if (aksi === 'simpan') {
-    alert('✅ Transaksi #' + String(nomorTransaksi-1).padStart(4,'0') + ' berhasil disimpan!');
-    resetKeranjang();
-  } else if (aksi === 'preview') {
-    lihatNotaVisual();
+    const noStr = String(nomorTransaksi - 1).padStart(4,'0');
+    alert('✅ Transaksi #' + noStr + ' berhasil disimpan!');
+    siapTransaksiBaru();
   }
 }
 
@@ -1867,6 +1873,34 @@ function konfirmasiBarangBaru() {
   keranjang.push({ ...produkBaru, qty: 1 });
   renderKeranjang();
   tutupBarangBaru();
+}
+
+
+// Kirim WA dari modal preview — TIDAK catat riwayat lagi (sudah tercatat)
+async function kirimWADariPreview() {
+  const nota = buatTeksNota();
+  await simpanRiwayat(nota);
+  const noWa = document.getElementById('input-wa').value.replace(/\D/g, '');
+  let noF = noWa.startsWith('0') ? '62' + noWa.slice(1) : noWa;
+  const url = noF
+    ? `https://wa.me/${noF}?text=${encodeURIComponent(nota)}`
+    : `https://wa.me/?text=${encodeURIComponent(nota)}`;
+  window.open(url, '_blank');
+  tutupNota();
+  siapTransaksiBaru();
+}
+
+
+function siapTransaksiBaru() {
+  keranjang = [];
+  document.getElementById('input-bayar').value = '';
+  document.getElementById('input-wa').value = '';
+  document.getElementById('input-nama').value = '';
+  document.getElementById('cari-produk').value = '';
+  document.getElementById('popup-harga').style.display = 'none';
+  document.getElementById('modal-barang-baru').style.display = 'none';
+  renderKeranjang();
+  renderProduk();
 }
 
 </script>
