@@ -569,197 +569,19 @@
     margin-top: 2px;
     font-family: 'Courier New', monospace;
   }
-
-  #loginScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#1a472a,#2d6a4f);display:flex;align-items:center;justify-content:center;z-index:9999;}
-  #loginBox{background:white;border-radius:20px;padding:40px 30px;width:90%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
-  #loginBox .logo{text-align:center;margin-bottom:30px;}
-  #loginBox .logo h1{color:#1a472a;font-size:24px;font-weight:800;}
-  #loginBox .logo p{color:#666;font-size:13px;margin-top:4px;}
-  #loginBox .logo .icon{font-size:48px;margin-bottom:10px;}
-  #loginBox .form-group{margin-bottom:16px;}
-  #loginBox label{display:block;font-size:13px;font-weight:600;color:#333;margin-bottom:6px;}
-  #loginBox input{width:100%;padding:12px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none;}
-  #loginBox input:focus{border-color:#2d6a4f;}
-  #loginBox .btn-login{width:100%;padding:14px;background:linear-gradient(135deg,#1a472a,#2d6a4f);color:white;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;}
-  #loginBox .error-msg{background:#fee;color:#c00;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none;text-align:center;}
-  .produk-card-noharga{border-color:#f59e0b !important;}
-
 </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<div id="loginScreen">
-  <div id="loginBox">
-    <div class="logo"><div class="icon">🛒</div><h1>TOKO YON JAYA</h1><p>Sistem Kasir Sembako</p></div>
-    <div class="form-group"><label>Username</label><input type="text" id="inputUser" placeholder="Masukkan username" autocomplete="off"></div>
-    <div class="form-group"><label>Password</label><input type="password" id="inputPass" placeholder="Masukkan password"></div>
-    <button class="btn-login" onclick="doLogin()">🔐 Masuk</button>
-    <div class="error-msg" id="errMsg">❌ Username atau password salah!</div>
-  </div>
-</div>
-
-<!-- Firebase Compat -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script>
-firebase.initializeApp({
-  apiKey:"AIzaSyDfcHWx_u2XfsFOe-x5H9UYd0TBsoaicww",
-  authDomain:"kasir-sembako-7455b.firebaseapp.com",
-  projectId:"kasir-sembako-7455b",
-  storageBucket:"kasir-sembako-7455b.firebasestorage.app",
-  messagingSenderId:"759534521227",
-  appId:"1:759534521227:web:f307ab58aa00b040d33d8e"
-});
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-// ===== AUTH =====
-const USERS = {'admin':{pass:'admin123',role:'admin'},'kasir1':{pass:'kasir1234',role:'kasir'},'kasir2':{pass:'kasir1234',role:'kasir'}};
-const USER_EMAIL = {'admin':'admin@tokoyon.com','kasir1':'kasir@tokoyon.com','kasir2':'kasir2@tokoyon.com'};
-const USER_PASS_FB = {'admin':'admin123','kasir1':'kasir1234','kasir2':'kasir1234'};
-
-function doLogin() {
-  const u = document.getElementById('inputUser').value.trim();
-  const p = document.getElementById('inputPass').value;
-  const err = document.getElementById('errMsg');
-  if(USERS[u] && USERS[u].pass===p) {
-    localStorage.setItem('kasirUser',u);
-    localStorage.setItem('kasirRole',USERS[u].role);
-    document.getElementById('loginScreen').style.display='none';
-    auth.signInWithEmailAndPassword(USER_EMAIL[u], USER_PASS_FB[u])
-      .then(()=>{ console.log('Firebase login OK'); setStatus(true); })
-      .catch(e=>{ console.log('FB Error:',e.message); setStatus(false); });
-  } else {
-    err.style.display='block';
-    setTimeout(()=>err.style.display='none',3000);
-  }
-}
-
-function doLogout() {
-  if(confirm('Yakin mau keluar?')) {
-    localStorage.removeItem('kasirUser');
-    localStorage.removeItem('kasirRole');
-    auth.signOut();
-    document.getElementById('loginScreen').style.display='flex';
-  }
-}
-
-document.addEventListener('keydown',function(e){if(e.key==='Enter'){const ls=document.getElementById('loginScreen');if(ls&&ls.style.display!=='none')doLogin();}});
-
-// ===== FIREBASE CRUD =====
-function simpanProdukFirebase(list) {
-  if(!auth.currentUser) return;
-  db.collection('kasir').doc('produk').set({data:list})
-    .then(()=>console.log('Produk saved ✅'))
-    .catch(e=>console.error(e));
-}
-
-function simpanRiwayatFirebase(list) {
-  if(!auth.currentUser) return;
-  db.collection('kasir').doc('riwayat').set({data:list}).catch(e=>console.error(e));
-}
-
-function loadDataFirebase() {
-  setStatus(true);
-  db.collection('kasir').doc('produk').get().then(snap=>{
-    if(snap.exists && snap.data().data){
-      window.produkList = snap.data().data;
-      produkList = window.produkList;
-      localStorage.setItem('produk_sembako', JSON.stringify(produkList));
-      console.log('✅ Produk dari Firebase:', produkList.length);
-    } else {
-      // Coba dari localStorage sebagai fallback
-      const local = localStorage.getItem('produk_sembako');
-      if(local) produkList = JSON.parse(local);
-    }
-    renderProduk();
-    renderProdukManager();
-  }).catch(e=>{ console.error('Gagal load produk:',e); setStatus(false); });
-
-  db.collection('kasir').doc('riwayat').get().then(snap=>{
-    if(snap.exists && snap.data().data){
-      localStorage.setItem('riwayat_sembako', JSON.stringify(snap.data().data));
-    }
-    renderRiwayat();
-  }).catch(e=>console.error('Gagal load riwayat:',e));
-}
-
-auth.onAuthStateChanged(function(user){
-  if(user){
-    setStatus(true);
-    loadDataFirebase();
-  } else {
-    setStatus(false);
-  }
-});
-
-window.addEventListener('DOMContentLoaded',function(){
-  const saved = localStorage.getItem('kasirUser');
-  if(saved && USERS[saved]){
-    document.getElementById('loginScreen').style.display='none';
-    auth.signInWithEmailAndPassword(USER_EMAIL[saved], USER_PASS_FB[saved])
-      .then(()=>setStatus(true))
-      .catch(e=>{ console.log(e.message); setStatus(false); });
-  }
-});
-
-// ===== IMPORT XLSX =====
-function importDariIPOS(input) {
-  const file = input.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const wb = XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
-      let hi=-1;
-      for(let i=0;i<rows.length;i++){if(rows[i]&&rows[i].includes('NAMAITEM')){hi=i;break;}}
-      if(hi===-1){alert('Format tidak dikenali!');return;}
-      const h=rows[hi];
-      const iN=h.indexOf('NAMAITEM'),iS=h.indexOf('SATUAN'),iH=h.indexOf('HARGAJUAL');
-      let imported=0;
-      for(let i=hi+1;i<rows.length;i++){
-        const r=rows[i]; if(!r||!r[iN]) continue;
-        const nama=String(r[iN]).trim();
-        const satuan=r[iS]?String(r[iS]).trim():'pcs';
-        const harga=parseFloat(r[iH])||0;
-        if(!nama) continue;
-        if(!produkList.find(p=>p.nama.toLowerCase()===nama.toLowerCase())){
-          produkList.push({id:Date.now()+i,nama,satuan,harga});
-          imported++;
-        }
-      }
-      simpanProdukLS();
-      simpanProdukFirebase(produkList);
-      renderProduk(); renderProdukManager();
-      const skipped=(rows.length-hi-1)-imported;
-      alert('✅ Import '+imported+' produk baru!\n⏭️ '+skipped+' diskip (duplikat/kosong)');
-    } catch(err){alert('Gagal: '+err.message);}
-  };
-  reader.readAsArrayBuffer(file);
-  input.value='';
-}
-
-// ===== RESET PRODUK =====
-function resetSemuaProduk(){
-  if(confirm('Hapus SEMUA produk? Tidak bisa dikembalikan!')){
-    produkList=[];
-    simpanProdukLS();
-    simpanProdukFirebase([]);
-    renderProduk(); renderProdukManager();
-    alert('Semua produk dihapus!');
-  }
-}
-</script>
-
 
 <header>
   <div>
     <h1>🛒 Kasir Sembako</h1>
     <span id="waktu-header">--</span>
   </div>
-  <span id="statusBadge" class="badge-offline">🔴 OFFLINE</span>
-<button onclick="doLogout()" style="background:#dc2626;color:white;border:none;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;">🚪 Keluar</button>
+  <span id="status-badge" class="badge-offline">...</span>
 </header>
 
 <div class="tabs">
@@ -812,9 +634,6 @@ function resetSemuaProduk(){
 <!-- PRODUK -->
 <div id="page-produk" class="page">
   <button class="btn btn-hijau" onclick="toggleFormTambah()" style="margin-bottom:10px">+ Tambah Produk</button>
-<button onclick="document.getElementById('importXlsx').click()" style="margin-bottom:10px;margin-left:8px;background:#2563eb;color:white;border:none;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;">📥 Import XLSX iPos</button>
-<button onclick="resetSemuaProduk()" style="margin-bottom:10px;margin-left:8px;background:#dc2626;color:white;border:none;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;">🗑 Reset Produk</button>
-<input type="file" id="importXlsx" accept=".xlsx,.xls" style="display:none" onchange="importDariIPOS(this)">
   <div id="form-tambah" class="form-tambah" style="display:none">
     <h3 id="form-judul">Tambah Produk Baru</h3>
     <div class="form-field">
@@ -944,7 +763,6 @@ let nomorTransaksi = parseInt(localStorage.getItem('no_transaksi') || '1');
 
 function simpanProdukLS() {
   localStorage.setItem('produk_sembako', JSON.stringify(produkList));
-  simpanProdukFirebase(produkList);
 }
 
 function rp(n) {
@@ -970,30 +788,20 @@ function renderProduk() {
   const grid = document.getElementById('produk-grid');
   const filtered = produkList.filter(p => p.nama.toLowerCase().includes(q));
   grid.innerHTML = filtered.map(p => `
-    <div class="produk-card ${!p.harga||p.harga<=0?'produk-card-noharga':''}" onclick="tambahKeranjang('${p.id}')">
+    <div class="produk-card" onclick="tambahKeranjang('${p.id}')">
       <div class="nama">${p.nama}</div>
       <div class="satuan">per ${p.satuan}</div>
-      <div class="harga" style="${!p.harga||p.harga<=0?'color:#f59e0b':''}">\n        ${!p.harga||p.harga<=0?'⚠️ Tap untuk set harga':rp(p.harga)}\n      </div>
+      <div class="harga">${rp(p.harga)}</div>
     </div>
   `).join('');
 }
 
 function tambahKeranjang(id) {
   const p = produkList.find(x => x.id === id);
-  if(!p) return;
-  if(!p.harga || p.harga<=0){
-    const input = prompt('💰 Harga "'+p.nama+'" belum diset!\nMasukkan harga (Rp):');
-    if(input===null) return;
-    const hargaBaru = parseFloat(input);
-    if(!hargaBaru||hargaBaru<=0){alert('Harga tidak valid!');return;}
-    p.harga = hargaBaru;
-    simpanProdukLS();
-    simpanProdukFirebase(produkList);
-    renderProduk();
-  }
+  if (!p) return;
   const ada = keranjang.find(x => x.id === id);
-  if(ada) ada.qty++;
-  else keranjang.push({...p, qty:1});
+  if (ada) ada.qty++;
+  else keranjang.push({...p, qty: 1});
   renderKeranjang();
 }
 
@@ -1197,7 +1005,6 @@ function simpanRiwayat(nota) {
   });
   if (riwayat.length > 100) riwayat.pop();
   localStorage.setItem('riwayat_sembako', JSON.stringify(riwayat));
-  simpanRiwayatFirebase(riwayat);
 }
 
 // === PRODUK MANAGER ===
@@ -1360,10 +1167,201 @@ function updateWaktu() {
 }
 
 // INIT
-renderProduk();
-updateWaktu();
-setInterval(updateWaktu, 30000);
-</script>
+// Init dipindah ke DOMContentLoaded (lihat bawah)
 
+// ===================== FIREBASE CONFIG =====================
+const firebaseConfig = {
+  apiKey: "AIzaSyDfcHWx_u2XfsFOe-x5H9UYd0TBsoaicww",
+  authDomain: "kasir-sembako-7455b.firebaseapp.com",
+  projectId: "kasir-sembako-7455b",
+  storageBucket: "kasir-sembako-7455b.firebasestorage.app",
+  messagingSenderId: "759534521227",
+  appId: "1:759534521227:web:8be871baaaa4b463d33d8e"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Status koneksi
+const badge = document.getElementById('status-badge');
+db.enableNetwork().then(() => {
+  badge.textContent = 'ONLINE';
+  badge.style.background = '#16a34a';
+}).catch(() => {
+  badge.textContent = 'OFFLINE';
+  badge.style.background = '#f59e0b';
+});
+
+// ===================== FIREBASE HELPERS =====================
+
+// Simpan produk ke Firestore
+async function simpanProdukFS() {
+  try {
+    const batch = db.batch();
+    produkList.forEach(p => {
+      const ref = db.collection('produk').doc(String(p.id));
+      batch.set(ref, p);
+    });
+    await batch.commit();
+  } catch(e) {
+    // fallback localStorage
+    localStorage.setItem('produksembako', JSON.stringify(produkList));
+  }
+}
+
+// Load produk dari Firestore
+async function loadProdukFS() {
+  try {
+    const snap = await db.collection('produk').get();
+    if (!snap.empty) {
+      produkList = snap.docs.map(d => d.data());
+    } else {
+      // Jika Firestore kosong, upload default
+      produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
+      simpanProdukFS();
+    }
+  } catch(e) {
+    produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
+  }
+  renderProduk();
+  renderProdukManager();
+}
+
+// Simpan riwayat ke Firestore
+async function simpanRiwayatFS(nota) {
+  const total = keranjang.reduce((s,x) => s + x.harga * x.qty, 0);
+  const data = {
+    id: nomorTransaksi,
+    waktu: Date.now(),
+    total,
+    nama: document.getElementById('input-nama').value.trim(),
+    items: keranjang.map(x => x.nama + ' x' + x.qty),
+    nota,
+    noWa: document.getElementById('input-wa').value
+  };
+  try {
+    await db.collection('riwayat').doc(String(nomorTransaksi)).set(data);
+    nomorTransaksi++;
+    localStorage.setItem('notransaksi', nomorTransaksi);
+  } catch(e) {
+    // fallback localStorage
+    const riwayat = JSON.parse(localStorage.getItem('riwayatsembako')) || [];
+    riwayat.unshift(data);
+    if (riwayat.length > 100) riwayat.pop();
+    localStorage.setItem('riwayatsembako', JSON.stringify(riwayat));
+    nomorTransaksi++;
+    localStorage.setItem('notransaksi', nomorTransaksi);
+  }
+}
+
+// Load riwayat dari Firestore
+async function loadRiwayatFS() {
+  try {
+    const snap = await db.collection('riwayat').orderBy('waktu','desc').limit(100).get();
+    return snap.docs.map(d => d.data());
+  } catch(e) {
+    return JSON.parse(localStorage.getItem('riwayatsembako')) || [];
+  }
+}
+
+// Hapus produk dari Firestore
+async function hapusProdukFS(id) {
+  try { await db.collection('produk').doc(String(id)).delete(); } catch(e) {}
+}
+
+// Hapus semua riwayat dari Firestore
+async function hapusRiwayatFS() {
+  try {
+    const snap = await db.collection('riwayat').get();
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  } catch(e) {}
+}
+
+// ===================== OVERRIDE FUNCTIONS =====================
+function simpanProdukLS() {
+  localStorage.setItem('produksembako', JSON.stringify(produkList));
+  simpanProdukFS();
+}
+
+function simpanRiwayat(nota) {
+  simpanRiwayatFS(nota);
+}
+
+async function renderRiwayat() {
+  const riwayat = await loadRiwayatFS();
+  const hari = new Date().toDateString();
+  const totalHari = riwayat
+    .filter(r => new Date(r.waktu).toDateString() === hari)
+    .reduce((s,r) => s + r.total, 0);
+  document.getElementById('total-harian').textContent = rp(totalHari);
+  const list = document.getElementById('riwayat-list');
+  if (!riwayat.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:#888">Belum ada transaksi</div>';
+    return;
+  }
+  list.innerHTML = riwayat.map(r => `
+    <div class="riwayat-item">
+      <div class="waktu">${String(r.id).padStart(4,'0')} &bull; ${formatTanggal(r.waktu)}</div>
+      ${r.nama ? `<div style="font-size:13px;font-weight:600;margin:2px 0">${r.nama}</div>` : ''}
+      <div class="total">${rp(r.total)}</div>
+      <div class="items-preview">${r.items.join(', ')}</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn-detail" style="flex:1" onclick="lihatDetailRiwayat(${r.id})">Lihat Nota</button>
+        <button class="btn-resend" style="flex:1;margin-top:0" onclick="kirimUlang(${r.id})">Kirim WA</button>
+      </div>
+    </div>`).join('');
+  window._riwayatCache = riwayat;
+}
+
+function lihatDetailRiwayat(id) {
+  const riwayat = window._riwayatCache || [];
+  const r = riwayat.find(x => x.id == id);
+  if (!r) return;
+  detailAktif = r;
+  document.getElementById('detail-judul').textContent = 'Nota #' + String(r.id).padStart(4,'0');
+  document.getElementById('detail-teks').textContent = r.nota;
+  document.getElementById('detail-modal').style.display = 'flex';
+}
+
+function kirimUlang(id) {
+  const riwayat = window._riwayatCache || [];
+  const r = riwayat.find(x => x.id == id);
+  if (!r) return;
+  const no = r.noWa ? r.noWa.replace(/\D/g,'') : '';
+  let noF = no;
+  if (no.startsWith('0')) noF = '62' + no.slice(1);
+  const url = noF
+    ? `https://wa.me/${noF}?text=${encodeURIComponent(r.nota)}`
+    : `https://wa.me/?text=${encodeURIComponent(r.nota)}`;
+  window.open(url, '_blank');
+}
+
+async function hapusRiwayat() {
+  if (!confirm('Hapus semua riwayat transaksi?')) return;
+  await hapusRiwayatFS();
+  localStorage.removeItem('riwayatsembako');
+  localStorage.removeItem('notransaksi');
+  nomorTransaksi = 1;
+  renderRiwayat();
+}
+
+function hapusProduk(id) {
+  if (!confirm('Hapus produk ini?')) return;
+  produkList = produkList.filter(x => x.id !== id);
+  simpanProdukLS();
+  hapusProdukFS(id);
+  renderProdukManager();
+  renderProduk();
+}
+
+// Init Firebase setelah DOM siap
+window.addEventListener('DOMContentLoaded', () => {
+  loadProdukFS();
+  updateWaktu();
+  setInterval(updateWaktu, 30000);
+});
+</script>
 </body>
 </html>
