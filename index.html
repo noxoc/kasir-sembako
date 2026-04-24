@@ -569,8 +569,17 @@
     margin-top: 2px;
     font-family: 'Courier New', monospace;
   }
+
+.best-seller-card {
+  border-color: var(--emas) !important;
+  background: linear-gradient(135deg, #fffbf0, #fff8e1) !important;
+}
 </style>
-  <!-- Firebase SDK -->
+  <!-- html2pdf untuk export PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- SheetJS untuk baca XLSX -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
@@ -634,6 +643,9 @@
 <!-- PRODUK -->
 <div id="page-produk" class="page">
   <button class="btn btn-hijau" onclick="toggleFormTambah()" style="margin-bottom:10px">+ Tambah Produk</button>
+  <button class="btn btn-outline" onclick="document.getElementById('import-xlsx').click()" style="margin-bottom:8px">📂 Import Database XLSX (iPos)</button>
+  <button class="btn btn-reset" onclick="resetProdukDefault()" style="margin-bottom:8px">🔄 Reset Produk ke Default</button>
+  <input type="file" id="import-xlsx" accept=".xlsx" style="display:none" onchange="importXLSX(this)">
   <div id="form-tambah" class="form-tambah" style="display:none">
     <h3 id="form-judul">Tambah Produk Baru</h3>
     <div class="form-field">
@@ -736,24 +748,4368 @@
 const TOKO = "TOKO YON JAYA";
 
 const PRODUK_DEFAULT = [
-  {id:'1', nama:'Beras', harga:14000, satuan:'kg'},
-  {id:'2', nama:'Gula Pasir', harga:17000, satuan:'kg'},
-  {id:'3', nama:'Minyak Goreng', harga:18000, satuan:'liter'},
-  {id:'4', nama:'Tepung Terigu', harga:11000, satuan:'kg'},
-  {id:'5', nama:'Garam', harga:3000, satuan:'bungkus'},
-  {id:'6', nama:'Telur', harga:3000, satuan:'butir'},
-  {id:'7', nama:'Mie Instan', harga:3500, satuan:'bungkus'},
-  {id:'8', nama:'Kecap Manis', harga:8000, satuan:'botol'},
-  {id:'9', nama:'Sabun Mandi', harga:5000, satuan:'buah'},
-  {id:'10', nama:'Detergen', harga:9000, satuan:'bungkus'},
-  {id:'11', nama:'Bawang Merah', harga:30000, satuan:'kg'},
-  {id:'12', nama:'Bawang Putih', harga:28000, satuan:'kg'},
-  {id:'13', nama:'Cabai Merah', harga:45000, satuan:'kg'},
-  {id:'14', nama:'Mentega', harga:7000, satuan:'bungkus'},
-  {id:'15', nama:'Susu Kental', harga:12000, satuan:'kaleng'},
-  {id:'16', nama:'Kopi Sachet', harga:2500, satuan:'sachet'},
-  {id:'17', nama:'Teh Celup', harga:8000, satuan:'kotak'},
-  {id:'18', nama:'Santan', harga:5000, satuan:'sachet'},
+  {
+    "id": "SDT01",
+    "nama": "Sedotan Koala Hitam Kecil",
+    "harga": 11000,
+    "satuan": "pak"
+  },
+  {
+    "id": "1160299",
+    "nama": "Nuvo Family Body Wash Kuning Pch 250G",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI28",
+    "nama": "Krisbee Fries Kentang Goreng 9Gr",
+    "harga": 33300,
+    "satuan": "box"
+  },
+  {
+    "id": "62876",
+    "nama": "Nuvo Family Body Wash Biru Pch 200G",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI30",
+    "nama": "Krisbee Krunchy Jagung Bakar Mentega 10Gr",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG16",
+    "nama": "Ciptadent Tp Maxi Cool Fresh 190G",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK35",
+    "nama": "Completa Coklat Sacset",
+    "harga": 27000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "61304",
+    "nama": "Giv White Body Wash Sakura Pch 40Ml",
+    "harga": 18000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI33",
+    "nama": "Krisbee Krunchy Jagung Bkr Mtg 22.5G",
+    "harga": 1600,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG14",
+    "nama": "Ciptadent Tp Maxi 12 Complete Fresh Mint 120",
+    "harga": 7600,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK36",
+    "nama": "Neo Hass Botol 188Ml (24Pcs)",
+    "harga": 45000,
+    "satuan": "dus"
+  },
+  {
+    "id": "MK37",
+    "nama": "Cleo 220Ml",
+    "harga": 27500,
+    "satuan": "dus"
+  },
+  {
+    "id": "62153",
+    "nama": "Giv White Hijab Bodywash Saffron 250Ml",
+    "harga": 14000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE13",
+    "nama": "Beras Topi Koki 5Kg",
+    "harga": 78000,
+    "satuan": "gram"
+  },
+  {
+    "id": "1060943",
+    "nama": "Giv White Body Wash Bengkoang Pch 250Ml",
+    "harga": 14000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61292",
+    "nama": "Bodywash Giv Tin&Zaitun Pouch 250Ml",
+    "harga": 14000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61293",
+    "nama": "Bodywash Giv Tin&Zaitun Pouch 400Ml",
+    "harga": 18000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060977",
+    "nama": "Giv White Body Wash Bengkoang Pch 400Ml",
+    "harga": 18000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG13",
+    "nama": "Ciptadent Tp Maxi 12 120Gr",
+    "harga": 7600,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG09",
+    "nama": "Ciptadent Tp Maxi 12 Cool Mint 120Gr",
+    "harga": 7600,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060973",
+    "nama": "Nuvo Family Body Wash Merah Pch 400G",
+    "harga": 16000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060975",
+    "nama": "Nuvo Family Body Wash Kuning Pch 400G",
+    "harga": 16000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61145",
+    "nama": "Nuvo Family Body Wash Cool Pch 40",
+    "harga": 16000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060809",
+    "nama": "Nuvo Family  Wash Biru Pch 60G",
+    "harga": 2500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61153",
+    "nama": "Nuvo Family Body Wash Pink Pch 60Ml",
+    "harga": 2500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060810",
+    "nama": "Nuvo Family Body Wash Merah Pch 60G",
+    "harga": 2500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61151",
+    "nama": "Nuvo Family Body Wash Cool Pch 60G",
+    "harga": 2500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060292",
+    "nama": "Supersol Carbol Pch 750Ml",
+    "harga": 12900,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG10",
+    "nama": "Ciptadent Tp Maxi 12 Cool Mint 75Gr",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG11",
+    "nama": "Ciptadent Tp Maxi 12 Fm 75Gr",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG12",
+    "nama": "Ciptadent Tp Maxi 12 Complate 75G",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG17",
+    "nama": "Ciptadent To Maxi Cool Fresh 75Gr",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI31",
+    "nama": "Krisbee Krunchy Jagung Bakar Mente 75Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG08",
+    "nama": "Kodomo Tp Orange Tube 45Ml",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI34",
+    "nama": "Potabee Regular Bbq Beef 35Gr",
+    "harga": 5700,
+    "satuan": "pcs"
+  },
+  {
+    "id": "62154",
+    "nama": "Giv Whiteh Hijab Bodywash Safron 400Ml",
+    "harga": 18000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1067173",
+    "nama": "Ekonomi Cream Det Lemon 900 Bag 380Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI39",
+    "nama": "Potabee Ayam Bakar 35Gr",
+    "harga": 9000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1150056",
+    "nama": "Baby Happy Pants Xl1 Sachet 6+1",
+    "harga": 15000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1150046",
+    "nama": "Baby Happy Pants M1 Sachet 6+1",
+    "harga": 12000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1060153",
+    "nama": "Soklin Pemutih Regular Btl 500Ml",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "50254",
+    "nama": "Happily Adult Pants M1 Sachet",
+    "harga": 17000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1060407",
+    "nama": "Soklin Pemutih Regular Sct 28Ml",
+    "harga": 3000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "60830",
+    "nama": "Giv White Barsoap Bengkoang Ktk 72G",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "60914",
+    "nama": "Giv White Barsoap Mulberry Kotak 72G",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "62151",
+    "nama": "Barsoap Giv White Hijab Safron 72G",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "60860",
+    "nama": "Giv White Barsoap Pearl Kotak 72G",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "62962",
+    "nama": "Giv White Hijab Barsoap Oud Ktk 7",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "80595",
+    "nama": "Giv Bodywash Glamour Pass Fl Pch 60Ml",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "63385",
+    "nama": "Nuvo Family Barsoap Cool Prt 72Gr",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "63381",
+    "nama": "Nuvo Family Barsoap Fresh Prt 72G",
+    "harga": 2650,
+    "satuan": "pcs"
+  },
+  {
+    "id": "63384",
+    "nama": "Nuvo Family Barsoap Hygienic Prt 72G",
+    "harga": 2650,
+    "satuan": "pcs"
+  },
+  {
+    "id": "63380",
+    "nama": "Nuvo Family Barsoap Nature Prt 72",
+    "harga": 2650,
+    "satuan": "pcs"
+  },
+  {
+    "id": "63379",
+    "nama": "Nuvo Family Barsoap Mild Prt 72Gr",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "63378",
+    "nama": "Nuvo Family Barsoap Total Prt 72G",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1160296",
+    "nama": "Nuvo Family Body Wash Biru Pch 250G",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1160298",
+    "nama": "Nuvo Family Body Wash Hijau Pch 250Ml",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1160297",
+    "nama": "Nuvo Family Body Wash Merah Pch 250G",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1061171",
+    "nama": "Ekonomi Pencuci Piring Jn Pch 650",
+    "harga": 7900,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20229",
+    "nama": "Food Kecap Manis Sedap Scp Refil 270G",
+    "harga": 8500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20297",
+    "nama": "Guribee Rumput Laut 65Gr",
+    "harga": 7500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "10709",
+    "nama": "Kodomo Wet Wipes Blue Bag",
+    "harga": 10362,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM12",
+    "nama": "Aquaviva Btl 700Ml",
+    "harga": 1820,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK21",
+    "nama": "Rokok Sampoerna 16 Lasermild",
+    "harga": 37000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK15",
+    "nama": "Rokok Class Mild 16",
+    "harga": 29500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK01",
+    "nama": "Rokok Djitoe Bold 16",
+    "harga": 22000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20230",
+    "nama": "Food Kecap Manis Sedp Spc Btl 135Ml",
+    "harga": 9000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS17",
+    "nama": "Foodrtd Kopi Nongkrong 150Ml Isi 24",
+    "harga": 817,
+    "satuan": "dus"
+  },
+  {
+    "id": "RK11",
+    "nama": "Rokok Djitoe Click Berry 16",
+    "harga": 23500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK12",
+    "nama": "Rokok Djitoe Click Watermelon 16",
+    "harga": 23500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060978",
+    "nama": "Giv White Body Wash Mulberry Pch",
+    "harga": 18000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK13",
+    "nama": "Rokok Djitoe Click Watermelon 20",
+    "harga": 28000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK14",
+    "nama": "Rokok Marlboro Filter Black 12",
+    "harga": 24500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "10531",
+    "nama": "Kodomo Shampoo Gel Orange  Btl 45 Ml",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK16",
+    "nama": "Rokok In Mild16",
+    "harga": 26500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK17",
+    "nama": "Rokok In Mild Menthol 16",
+    "harga": 26500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "10532",
+    "nama": "Kodomo Shampoo Gel Strawberry 45Ml",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG07",
+    "nama": "Kodomo Tp Grape Tube 45G",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SDT02",
+    "nama": "Sedotan Koala Hitam Besar",
+    "harga": 11500,
+    "satuan": "pak"
+  },
+  {
+    "id": "PG06",
+    "nama": "Kodomo Tp Strawberry Tube 45Gr",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61112",
+    "nama": "Ekonomi Cream Det Violet 500 Bag 145 Gr",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "63349",
+    "nama": "Ekonomi Cream Det Nanas Bag 175Gr",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1260010",
+    "nama": "Ekonomi Cream Det Lemon  Bag 380Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1110702",
+    "nama": "Emeron Shampo Black & Shine 12 Sct",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "RK18",
+    "nama": "Rokok A Satu Filter 12",
+    "harga": 17000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1110754",
+    "nama": "Emeron Shampo Haireall Ctrl Sct",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "RK19",
+    "nama": "Rokok A Satu Filter 20",
+    "harga": 23000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20262",
+    "nama": "Kopi Top Gula Aren 22Gr",
+    "harga": 18500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1120081",
+    "nama": "Sedap Mie Cup Goreng 85Gr",
+    "harga": 5700,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK20",
+    "nama": "Rokok Dji Samsu 6+6",
+    "harga": 20500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61041",
+    "nama": "Glasscleaner Clink Ungu Pch 400Ml",
+    "harga": 4500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20166",
+    "nama": "Sukses Mie Goreng Kecap 129Gr",
+    "harga": 4500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK22",
+    "nama": "Rokok Sampoerna Prima 12",
+    "harga": 16000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK23",
+    "nama": "Rokok Dji Sam Soe Super Premium",
+    "harga": 23000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060009",
+    "nama": "Ekonomi Cream Det Lemon 500 Bag 145Gr",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK25",
+    "nama": "Rokok Remi Kretek 16",
+    "harga": 11500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK28",
+    "nama": "Rokok Djitoe Bold 20",
+    "harga": 27500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK29",
+    "nama": "Rokok Gudang Garam Merah 12",
+    "harga": 16500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK30",
+    "nama": "Rokok Gudang Garam Merah 16",
+    "harga": 19500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060832",
+    "nama": "Ekonomi Cream Det Putih Bag 380Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "11107555",
+    "nama": "Emeron Shampoo Soft Smooth Sct 10",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1010926",
+    "nama": "Emeron Shampoo Hijab Anti Hf Sct 10Ml",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "10528",
+    "nama": "Kodomo Shampoo Gel Strawberry 200 Ml",
+    "harga": 14800,
+    "satuan": "pcs"
+  },
+  {
+    "id": "10527",
+    "nama": "Kodomo Shampoo Gel Orange Botol 200Ml",
+    "harga": 14800,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1110879",
+    "nama": "Zinc Sh Active Fresh Db Sct 10Ml",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1110752",
+    "nama": "Zinc Sh Active Cool Db Sct 1Oml",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1110751",
+    "nama": "Zinc Sh Black Shine Db Sc 10Ml",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "20251",
+    "nama": "Olala Anggur Cup 150Ml",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20252",
+    "nama": "Olala Jambu Cup 150Ml",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1110749",
+    "nama": "Zinc Sh Hairfall Trt Db Sc 10Ml",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1110748",
+    "nama": "Zinc Sh Refreshing Cool Db Sc 10Ml",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1110747",
+    "nama": "Zinc Sh Clean Active Db Sc 10Ml",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1160339",
+    "nama": "Rapika Hijau Pch 300Ml",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1160340",
+    "nama": "Rapika Ungu Pch 300Ml",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK26",
+    "nama": "Rokok Surya Gudang Garam 12",
+    "harga": 27000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "62767",
+    "nama": "So Fresh Aroma Therapy Citrus 10Ml",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1110750",
+    "nama": "Zinc Sh Act Soft Care Db Sc 10Ml",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1060800",
+    "nama": "Sedap Kecap Manis Btl 135Ml",
+    "harga": 9000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1160803",
+    "nama": "Food Kecap Sedap Pch 77Gr",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "63255",
+    "nama": "Food Kecap Sedap Pch 550Gr",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1020227",
+    "nama": "Food Kecap Sedap Spc Refil 77Gr",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20269",
+    "nama": "Kopi Mayor Pck 125 Gr",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "80965",
+    "nama": "Kopi Top Cappucino Rtg 25 Gr",
+    "harga": 19600,
+    "satuan": "rtg"
+  },
+  {
+    "id": "RK27",
+    "nama": "Rokok Surya Gudang Garam 16",
+    "harga": 37000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20453",
+    "nama": "Teh Lemon Madu Btl 350Ml",
+    "harga": 2098,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI36",
+    "nama": "Potabee Regular Grilled Seawed 65G",
+    "harga": 9500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "80598",
+    "nama": "Giv Bodwash Glamour Pass Fl Pch 250Ml",
+    "harga": 14000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1260142",
+    "nama": "Daia Powder Detergen Floral 245 Gr",
+    "harga": 5500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1260496",
+    "nama": "Daia Powder Detergen Fruity 245 Gr",
+    "harga": 5500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060736",
+    "nama": "Daia Powder Detergen Putih Sct 47 Gr",
+    "harga": 5500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1260735",
+    "nama": "Daia Powder Detergen Putih 800 Gr",
+    "harga": 16500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060353",
+    "nama": "Soklin Lantai Ungu Pch 770Ml",
+    "harga": 12500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1260845",
+    "nama": "Daia Powder Detergen Putih 245 Gr",
+    "harga": 5500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "60870",
+    "nama": "Daia Powder Detergen Romantiv Pink Sct 47 Gr",
+    "harga": 5500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "60902",
+    "nama": "Daia Powdr Putih Det 470+25 Gr",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61023",
+    "nama": "Daia Powder Detergen Violet Pasion 47 Gr",
+    "harga": 5500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "LB01",
+    "nama": "Lakban Bening 48Mmx90Y",
+    "harga": 9500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61828",
+    "nama": "Daia Powder Detergen Celan And Fresh Sct",
+    "harga": 5500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1020087",
+    "nama": "Jas Jus Anggur Sct 6 Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1020132",
+    "nama": "Jas Jus Jeruk Nipis 6Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1020168",
+    "nama": "Jas Jus Jeruk Peras 6Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "62432",
+    "nama": "Sokllin Liquid Det Wb Pch 525Ml",
+    "harga": 11500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LB02",
+    "nama": "Lakban Bening 24Mmx90Y",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE14",
+    "nama": "Beras Raja Lima Platinum 5Kg",
+    "harga": 78000,
+    "satuan": "gram"
+  },
+  {
+    "id": "1020369",
+    "nama": "Jas Jus Cincau Sct 6Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "60904",
+    "nama": "Daia Powder Detergen R Pink 470 + 25 Gr",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1020013",
+    "nama": "Jas Jus Jambu 6Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "61027",
+    "nama": "Daia Powder Violet Fasion 470+25 Gr",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1260871",
+    "nama": "Daia Powder Detergen Romantic Pink 245Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20289",
+    "nama": "Foodt Golda Capuccino 200Ml",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20293",
+    "nama": "Noodle Sedap Mie Cup Ayam Jerit",
+    "harga": 5700,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20325",
+    "nama": "Noodle Sedap Mie Cup Baso Bleduk",
+    "harga": 5700,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1120084",
+    "nama": "Sedap Mie Cup Kari Sepecial 81Gr",
+    "harga": 5700,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1061022",
+    "nama": "Daia Powder Detergen Violet 800 Gr",
+    "harga": 16500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1120083",
+    "nama": "Sedap Mie Cup Soto 81 Gr",
+    "harga": 5700,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20326",
+    "nama": "Ekomie Bumbu Mie Goreng Bag 60Gr",
+    "harga": 1250,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20224",
+    "nama": "Ekomie Bumbu Kaldu Ayam Bag 55Gr",
+    "harga": 1099,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20030",
+    "nama": "Sedap Mie Goreng Bag 91Gr",
+    "harga": 3300,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20355",
+    "nama": "Sukses Mie Goreng Rendang 132G",
+    "harga": 4500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20448",
+    "nama": "Sukses Mie Goreng Aceh 140G",
+    "harga": 3528,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20310",
+    "nama": "Sedap Mie Singapore Spicy Laksa 83Gr",
+    "harga": 3300,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20234",
+    "nama": "Sedap Mie Korean Spicy Chkin Bag 87Gr",
+    "harga": 3300,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1020435",
+    "nama": "Ramen Yes 88Gr Kuah Hakata Chk",
+    "harga": 2034,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20031",
+    "nama": "Sedap Mie Ayam Bawang 71Gr",
+    "harga": 2661,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20057",
+    "nama": "Sedap Mie Kari Kental Spec 75Gr",
+    "harga": 3300,
+    "satuan": "pcs"
+  },
+  {
+    "id": "50070",
+    "nama": "Floridina Orange Btl 350Ml",
+    "harga": 2536,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20032",
+    "nama": "Sedap Mie Soto 76Gr",
+    "harga": 3300,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20292",
+    "nama": "Foodrtd Floridina Coco 350Ml",
+    "harga": 2536,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG05",
+    "nama": "Ciptadent Tp Maxi 12 Cool Mint 190Gr",
+    "harga": 11500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20254",
+    "nama": "So Yumie Gelas Ayam Bawang",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20255",
+    "nama": "So Yumie Gelas Baso Sapi",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG15",
+    "nama": "Ciptadent Tp Maxi Compllate 190Gr",
+    "harga": 11500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20256",
+    "nama": "So Yumie Gelas Soto Ayam",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20398",
+    "nama": "So Yumie Gelas Kari Ayam",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20483",
+    "nama": "So Yumie Gelas Ayam Pds",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20451",
+    "nama": "Milku Marie Biskuit 200Ml",
+    "harga": 2779,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1161928",
+    "nama": "Soklin Powder Detergen Antisep 218 Ml",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "63107",
+    "nama": "Soklin Powder Detergen Antisep Deo Sct",
+    "harga": 6500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "63199",
+    "nama": "Soklin Powder Detergen Antisep Deo",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20439",
+    "nama": "Jas Jus Kelapa Muda Sct 50 6Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "20272",
+    "nama": "Milku Coklat Prem 200Ml",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20273",
+    "nama": "Milku Sttrawberry 200Ml",
+    "harga": 2779,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1160519",
+    "nama": "Boom Powder Det Wangi Bunga 280Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1160676",
+    "nama": "Boom Powder Det Jeruk Nipis 280G",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "60858",
+    "nama": "Boom Powder Det Putih 280Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060974",
+    "nama": "Nuvo Family Body Wash Hijau Pch 400G",
+    "harga": 16000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS18",
+    "nama": "Kopi Kingkong Merah 70Gr",
+    "harga": 10500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1020059",
+    "nama": "Jas Jus Sirsak Sct 6Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "ART03",
+    "nama": "Sikat Lantai Potens R001 19.5/1",
+    "harga": 28000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1020015",
+    "nama": "Jas Jus Mangga Sct 6Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1020332",
+    "nama": "Jas Jus Leci Sct  6Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1065959",
+    "nama": "Soklin Softener Stary New York 820Ml",
+    "harga": 11500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1161356",
+    "nama": "Soklin Softener Fine & Cft Sct 13 Ml",
+    "harga": 5000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1260839",
+    "nama": "Soklin Softener Sct 13 Ml",
+    "harga": 5000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1260840",
+    "nama": "Soklin Softener Cc Blue Sct 13 Ml",
+    "harga": 5000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "MS20",
+    "nama": "Kopi Kingkong 200G",
+    "harga": 13500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1463000",
+    "nama": "Royale Prem Spring Blossom Sct 13Ml",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1160897",
+    "nama": "Soklin Liquid Antibac Jumbo Sc 40Ml",
+    "harga": 5900,
+    "satuan": "rtg"
+  },
+  {
+    "id": "80539",
+    "nama": "Soklin Liquid Det Parfume Jumbo Sc 40Ml",
+    "harga": 5900,
+    "satuan": "rtg"
+  },
+  {
+    "id": "80887",
+    "nama": "Soklin  Liquid Det Wb Jumbo Sct 40Ml",
+    "harga": 11500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1020011",
+    "nama": "Jas Jus Strawwberry Sct 60 X 6 X 6 Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "A009",
+    "nama": "Sirup Marjan Melon",
+    "harga": 22000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "GS01",
+    "nama": "Gas Melon",
+    "harga": 25000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE03",
+    "nama": "Beras Rm 5Kg",
+    "harga": 77000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "A007",
+    "nama": "You C100 Orange",
+    "harga": 165000,
+    "satuan": "dus"
+  },
+  {
+    "id": "GS02",
+    "nama": "Gas 12Kg",
+    "harga": 210000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "A008",
+    "nama": "Sirup Abc Orange",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LB03",
+    "nama": "Lakban Bening 12Mmx90Y",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1020012",
+    "nama": "Jas Jus Melon",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "1020010",
+    "nama": "Jas Jus Lemon Sct 50 X 6 X 6Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "VIZ03",
+    "nama": "Air Minum Viz 220Ml X 48",
+    "harga": 23000,
+    "satuan": "dus"
+  },
+  {
+    "id": "1160819",
+    "nama": "Soklin Softener Stary New York Sct 65Ml",
+    "harga": 5500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "20055",
+    "nama": "Tea Jus Gula Batu Sct 8Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "62675",
+    "nama": "Wizz Stain Remover Dbl Sct 28Ml",
+    "harga": 6000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "20246",
+    "nama": "Japota Happy Honey Butter 35 Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI41",
+    "nama": "Japota Umami Jappanese Seaweed 3 G",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "OB02",
+    "nama": "Promag",
+    "harga": 8800,
+    "satuan": "pcs"
+  },
+  {
+    "id": "OB01",
+    "nama": "Bodrex",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "0042",
+    "nama": "Okky Jelly Drink",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "OB03",
+    "nama": "Entrostop",
+    "harga": 7917,
+    "satuan": "pcs"
+  },
+  {
+    "id": "OB05",
+    "nama": "Obat Nyamuk Kingkong",
+    "harga": 5500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "OB06",
+    "nama": "Obat Nyamuk Baygon 10 Jam",
+    "harga": 4500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE14",
+    "nama": "Kacang Hijau 1/2 Kg",
+    "harga": 14000,
+    "satuan": "gram"
+  },
+  {
+    "id": "PMP25",
+    "nama": "Cham Laurier Night Wing Gathers 8Pds",
+    "harga": 21500,
+    "satuan": "pak"
+  },
+  {
+    "id": "VIZ05",
+    "nama": "Air Minum Viz 330Ml",
+    "harga": 1459,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP30",
+    "nama": "Cham Safe Night 290Mm (5Pads)",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP31",
+    "nama": "Cham Safe Night 290Mm (18Pads)",
+    "harga": 19000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP",
+    "nama": "Cham Safe Night 290Mm (30Pads)",
+    "harga": 30000,
+    "satuan": "pak"
+  },
+  {
+    "id": "VIZ06",
+    "nama": "Air Minum Viz 600Ml",
+    "harga": 1605,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI007",
+    "nama": "Minyak Rose Brand 1 Lt",
+    "harga": 23000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP 28",
+    "nama": "Cham Bf Extra Maxiwing 20Pads",
+    "harga": 15500,
+    "satuan": "pak"
+  },
+  {
+    "id": "PMP 29",
+    "nama": "Cham Bf Extra Maxiwing 10Pads",
+    "harga": 8000,
+    "satuan": "pak"
+  },
+  {
+    "id": "A005",
+    "nama": "Tapioka Tani Gunung 500Gr",
+    "harga": 9000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SK003",
+    "nama": "Skm Tiga Sapi Besar 490G",
+    "harga": 13000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM",
+    "nama": "Chocolatos Matcha",
+    "harga": 22000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "ME20",
+    "nama": "Kwetiau Kering Bunga Tulip",
+    "harga": 6800,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI006",
+    "nama": "Minyak Kita 1 Ltr",
+    "harga": 17500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP08",
+    "nama": "Meries Pants L28",
+    "harga": 56500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CR01",
+    "nama": "Crystalin 600Ml",
+    "harga": 1875,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060972",
+    "nama": "Nuvo Family Body Wash Biru Pch 400G",
+    "harga": 16000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CR02",
+    "nama": "Crystalin Mini 330Ml",
+    "harga": 1563,
+    "satuan": "pcs"
+  },
+  {
+    "id": "127870",
+    "nama": "Sgm Eksplor 3+ Vanila 400Gr",
+    "harga": 41500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060895",
+    "nama": "Nuvo Family Body Wash Hijau Pch 60G",
+    "harga": 2500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP12",
+    "nama": "Meries Pants M48",
+    "harga": 78000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP06",
+    "nama": "Meries Pants L8",
+    "harga": 19000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP09",
+    "nama": "Meries Pants L42",
+    "harga": 79000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP07",
+    "nama": "Meries Pants L20",
+    "harga": 47500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI008",
+    "nama": "Minyak Rose Brand 2 Lt",
+    "harga": 45000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS19",
+    "nama": "Kopi Kingkong 80Gr",
+    "harga": 5500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE07",
+    "nama": "Tepung Gatot Kaca 1Kg",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE08",
+    "nama": "Tepung Gatot Kaca 1/2Kg",
+    "harga": 5500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART04",
+    "nama": "Flexible Mop Cotton Std 25",
+    "harga": 30000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART05",
+    "nama": "Pengki Tokyo Univ 9",
+    "harga": 16000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "OB04",
+    "nama": "Vave Obat Nyamuk Bakar",
+    "harga": 5500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK25",
+    "nama": "D'Best Cincau 320Ml",
+    "harga": 4250,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK24",
+    "nama": "Naraya Cincau Can 300Ml",
+    "harga": 3584,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK26",
+    "nama": "Vica 220Ml",
+    "harga": 1146,
+    "satuan": "pcs"
+  },
+  {
+    "id": "L001",
+    "nama": "Lee Mineral 1.500Ml",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "NS01",
+    "nama": "Nestle 330Ml",
+    "harga": 1792,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK20",
+    "nama": "Teh Kotak Anggur 50% 200Ml",
+    "harga": 3292,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK18",
+    "nama": "Teh Kotak Mangga 25% 200Ml",
+    "harga": 3167,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK16",
+    "nama": "Ultramilk Coklat 1000Ml",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "N020",
+    "nama": "Ultamilk Fullcream 1L",
+    "harga": 17917,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI94",
+    "nama": "Yupi Jungle Fun",
+    "harga": 417,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK32",
+    "nama": "Aw Can 250Ml",
+    "harga": 4584,
+    "satuan": "pcs"
+  },
+  {
+    "id": "N007",
+    "nama": "Walenschoco Soes",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1020436",
+    "nama": "Ramen Yes 84Gr Goreng Tokyo",
+    "harga": 2034,
+    "satuan": "pcs"
+  },
+  {
+    "id": "N033",
+    "nama": "Ulttramilk Strbry 250Ml",
+    "harga": 147000,
+    "satuan": "dus"
+  },
+  {
+    "id": "RK05",
+    "nama": "Rokok Helium Hitam",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK06",
+    "nama": "Rokok Helium Merah",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK08",
+    "nama": "Rokok Tren Clik",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK07",
+    "nama": "Rokok Abi",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK04",
+    "nama": "Rokok Hilton",
+    "harga": 18000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "NS03",
+    "nama": "Nestle 1500Ml",
+    "harga": 5125,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20438",
+    "nama": "Japota Happy Honey Butter 115Gr",
+    "harga": 14500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "DS001",
+    "nama": "Desaku Bawang Putih",
+    "harga": 11000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "GS03",
+    "nama": "Gas 5.5Kg",
+    "harga": 110000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SN02",
+    "nama": "Sandal Swallow All Uk",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AJ001",
+    "nama": "Sajiku Nasi Goreng Rasa Pedas",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SN03",
+    "nama": "Sandal Ardles",
+    "harga": 8000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LD001",
+    "nama": "Ladaku Merica Bubuk",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE05",
+    "nama": "Beras Sawah Hijau 5Kg",
+    "harga": 77500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE04",
+    "nama": "Beras Sawah Hijau 10Kg",
+    "harga": 152000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE06",
+    "nama": "Beras Sawah Jingga 5Kg",
+    "harga": 77500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "GU03",
+    "nama": "Gula Pns Timbang 1/2Kg",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE08",
+    "nama": "Beras Petani Qren 5Kg",
+    "harga": 77000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "127873",
+    "nama": "Sgm Eksplor 3+ Madu 400Gr",
+    "harga": 41500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP01",
+    "nama": "Meries Xl16",
+    "harga": 46500,
+    "satuan": "pak"
+  },
+  {
+    "id": "BE07",
+    "nama": "Beras Sawah Panen 5Kg",
+    "harga": 78000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP02",
+    "nama": "Meries Xl26",
+    "harga": 58000,
+    "satuan": "pak"
+  },
+  {
+    "id": "PMP03",
+    "nama": "Meries Pants M22",
+    "harga": 92667,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SS001",
+    "nama": "Sasa 2000",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI38",
+    "nama": "Potabee Aayam Bakar 65Gr",
+    "harga": 9500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI35",
+    "nama": "Potabee Regular Bbg Beef 65Gr",
+    "harga": 9500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK14",
+    "nama": "Buavita Guava 245Ml",
+    "harga": 6896,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK17",
+    "nama": "Ultramimi Strbry 125Ml",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK19",
+    "nama": "Sari Kacang Hijau 250Ml",
+    "harga": 4167,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK22",
+    "nama": "Oishi Kundur 320Ml",
+    "harga": 4450,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK23",
+    "nama": "Real Good Fruty All Varian",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK27",
+    "nama": "Bon Teh Melati Btl 330Ml",
+    "harga": 2167,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK30",
+    "nama": "Lasegar Twist 320Ml Allvarian",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK31",
+    "nama": "Dayday Sunkist Orange Can 300Ml",
+    "harga": 6250,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK33",
+    "nama": "Teh Sosro 200Ml",
+    "harga": 2188,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP10",
+    "nama": "Meries Pants M9",
+    "harga": 35500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP01",
+    "nama": "Lampu Led A Bulb 18W 16",
+    "harga": 25000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK03",
+    "nama": "Rokok Tator",
+    "harga": 19000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI37",
+    "nama": "Potabee Selections Salted Eeg 68Gr",
+    "harga": 9500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20327",
+    "nama": "Sukses Mie Goreng Ayam Geprek 126G",
+    "harga": 4500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61527",
+    "nama": "Daia Powder Det Violet Passion Ba 4Kg",
+    "harga": 70000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BI03",
+    "nama": "Bihun Cap Kambing Kelinci",
+    "harga": 30000,
+    "satuan": "pak"
+  },
+  {
+    "id": "AJ003",
+    "nama": "Saori Saos Tiram Btl",
+    "harga": 10500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "DS003",
+    "nama": "Desaku Kunyit",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "DS002",
+    "nama": "Desaku Ketumbar",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "JA01",
+    "nama": "Jagung Belah 3 1Kg",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61450",
+    "nama": "Daia Powder Det Putih 4X4Kg",
+    "harga": 70000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AJ004",
+    "nama": "Masako Ayam Kecil",
+    "harga": 5500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "AJ005",
+    "nama": "Masako Kecil Sapi",
+    "harga": 5500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "61162",
+    "nama": "Daia Powder Det Floral 2,7Kg",
+    "harga": 49000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE10",
+    "nama": "Beras Nozomi 5Kg",
+    "harga": 76000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE11",
+    "nama": "Beras Ktj 5Kg",
+    "harga": 70500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060389",
+    "nama": "Daia Powder Det Floral 1,5Kg",
+    "harga": 29500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "60905",
+    "nama": "Daia Powder Det Fruity Bag 470+25Gr",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI96",
+    "nama": "Chocopie",
+    "harga": 2001,
+    "satuan": "pcs"
+  },
+  {
+    "id": "JA02",
+    "nama": "Jagung Madura 1Kg",
+    "harga": 11000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "60734",
+    "nama": "Daia Powder Det Putih 1.5Kg",
+    "harga": 29500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "60873",
+    "nama": "Daia Powder Det Romatic Pink 1,5Kg",
+    "harga": 29500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "JA03",
+    "nama": "Jagung Halus 1 Kg",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "63485",
+    "nama": "Daia Powder Det Liliy Jasmine 1,5Kg",
+    "harga": 29500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI32",
+    "nama": "Krisbee Pillow Chocolava 100Gr",
+    "harga": 9500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1061830",
+    "nama": "Daia Powder Clean N Fresh 800Gr",
+    "harga": 16500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1260143",
+    "nama": "Daia Powder Det Floral Bag 800Gr",
+    "harga": 16500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AJ002",
+    "nama": "Sajiku Serbaguna 75G",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK02",
+    "nama": "Rokok 68 Bold",
+    "harga": 17000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SNK001",
+    "nama": "Piattos Kentang Sapi Panggang",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ABC001",
+    "nama": "Battre Abc Jam",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SS002",
+    "nama": "Sasa 80G 5000",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE10",
+    "nama": "Sagu Putra Tani 1Kg",
+    "harga": 9000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SS003",
+    "nama": "Sasa 100 Gr",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE11",
+    "nama": "Sagu Putra Tani 1/2Kg",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AJ006",
+    "nama": "Masako Sapi 123Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AJ007",
+    "nama": "Masako Ayam 123Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "UNI002",
+    "nama": "Royco Sapi Besar 94 Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "UNI001",
+    "nama": "Royco Ayam Besar 94Gr",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "UNI004",
+    "nama": "Royco Sapi Kecil 8Gr",
+    "harga": 500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM02",
+    "nama": "Nu Choco Hazetea  225Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI43",
+    "nama": "Japota Happy Honey Butter 68Gr",
+    "harga": 9800,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI40",
+    "nama": "Potabee Regular Grilled Seawed 115Gr",
+    "harga": 14500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM01",
+    "nama": "Nu Matcha Lattea 225Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE09",
+    "nama": "Sagu Tani Hijau 1 Kg",
+    "harga": 17000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1020009",
+    "nama": "Jas Jus Jeruk Sct  6Gr",
+    "harga": 3999,
+    "satuan": "rtg"
+  },
+  {
+    "id": "UNI007",
+    "nama": "Tolak Angin  Sacheet",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "UNI005",
+    "nama": "Pasta Close Up 72Gr",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "10791",
+    "nama": "Mama Lime Charcoal Pch 690G",
+    "harga": 9000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART33",
+    "nama": "Spon Mandi",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE04",
+    "nama": "Tepung Ketan 500G",
+    "harga": 13000,
+    "satuan": "gram"
+  },
+  {
+    "id": "MS05",
+    "nama": "Top Gula Aren Sct 180Gr",
+    "harga": 17000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "20088",
+    "nama": "Sukses Mie Goreng Ayam Kremes 133G",
+    "harga": 4500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG01",
+    "nama": "Pasta Gigi Pepsodent 72Gr",
+    "harga": 5500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG03",
+    "nama": "Pasta Gigi Pepsodent 190Gr",
+    "harga": 14000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG18",
+    "nama": "Ciptadent Tp Maxi Fm 190Gr",
+    "harga": 11500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK24",
+    "nama": "Rokok Raptor 12",
+    "harga": 18000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PG02",
+    "nama": "Pasta Gigi Pepsodent 120Gr",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TC004",
+    "nama": "Teh Cap Botol Box",
+    "harga": 7500,
+    "satuan": "box"
+  },
+  {
+    "id": "KA001",
+    "nama": "Korek Tokai",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP04",
+    "nama": "Meries Nb- S26",
+    "harga": 43500,
+    "satuan": "pak"
+  },
+  {
+    "id": "RK09",
+    "nama": "Rokok Sampoerna Mild 12",
+    "harga": 26000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK10",
+    "nama": "Rokok Djitoe Ultimatte",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE01",
+    "nama": "Beras Rm Super Kuning 10Kg",
+    "harga": 155000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE02",
+    "nama": "Beras 118 Super 10Kg",
+    "harga": 155000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI002",
+    "nama": "Minyak Sunco 2L",
+    "harga": 47500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "KB001",
+    "nama": "Kuku Bima Anggur Pak",
+    "harga": 7500,
+    "satuan": "pak"
+  },
+  {
+    "id": "TC001",
+    "nama": "Teh Bendera Box",
+    "harga": 7000,
+    "satuan": "box"
+  },
+  {
+    "id": "TC002",
+    "nama": "Teh Sariwangi Box 25",
+    "harga": 7000,
+    "satuan": "box"
+  },
+  {
+    "id": "TC003",
+    "nama": "Teh Sarimurni Box",
+    "harga": 7000,
+    "satuan": "box"
+  },
+  {
+    "id": "PG04",
+    "nama": "Pasta Gigi Barakat Tp 75Gr",
+    "harga": 4900,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TI01",
+    "nama": "Tisu Jolly 250 Sheet",
+    "harga": 8000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS01",
+    "nama": "Kapal Api Special Mix 23G",
+    "harga": 18500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "TE02",
+    "nama": "Tepung Seitiga Biru 500G",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE01",
+    "nama": "Tepung Seitiga Biru 1Kg",
+    "harga": 13000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE03",
+    "nama": "Tepung Beras 500G",
+    "harga": 9500,
+    "satuan": "gram"
+  },
+  {
+    "id": "TI02",
+    "nama": "Tisu Passeo Smart Soft 540Ply/250Ply",
+    "harga": 11000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS02",
+    "nama": "Indocafe Coffe Mix Sct",
+    "harga": 17000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "MS03",
+    "nama": "Max Tea Tarik Sachet",
+    "harga": 22000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "MS04",
+    "nama": "Indocafe Cappucino 25Gr",
+    "harga": 25000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "MS06",
+    "nama": "Abc Moca 27Gr",
+    "harga": 18000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "MS07",
+    "nama": "Good Day Cappucino 22G",
+    "harga": 23000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "TT001",
+    "nama": "Totole Kaldu Jamur 80G",
+    "harga": 12500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SU001",
+    "nama": "Sun Kara 65Ml",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SU002",
+    "nama": "Sun Kara 200Ml",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AQ01",
+    "nama": "Aqua 600Ml",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AQ02",
+    "nama": "Aqua 1.500Ml",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "M021",
+    "nama": "Mizone Lychee Lemon 500Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK09",
+    "nama": "Kratingdeng Kaleng 250Ml",
+    "harga": 7500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "S001",
+    "nama": "Sprite 250Ml",
+    "harga": 2627,
+    "satuan": "pcs"
+  },
+  {
+    "id": "FA01",
+    "nama": "Fanta 250Ml",
+    "harga": 2627,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CO01",
+    "nama": "Coca-Cola 250Ml",
+    "harga": 2627,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI07",
+    "nama": "Hatari Kelapa",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI06",
+    "nama": "Hatari Malkist",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "20182",
+    "nama": "Javana Gula Batu Btl 350Ml",
+    "harga": 2123,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI10",
+    "nama": "Shortcake Coklat",
+    "harga": 8500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI20",
+    "nama": "Shortcake Milk",
+    "harga": 8500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB02",
+    "nama": "B-29 Cream A500K 150Gr",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "KE002",
+    "nama": "Kecap Rusa 300Ml",
+    "harga": 14500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "UNI003",
+    "nama": "Royco Ayam Kecil 8Gr",
+    "harga": 500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI11",
+    "nama": "Saltcheese Combo 175G",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI17",
+    "nama": "Sugar Puff",
+    "harga": 13000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI09",
+    "nama": "Roma Bonita Kelapa Pandan 30G",
+    "harga": 1629,
+    "satuan": "pcs"
+  },
+  {
+    "id": "KE003",
+    "nama": "Kecap Rusa 650Ml",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SAO1",
+    "nama": "Sambal Indofood Extra Pedas 135Ml",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SAO2",
+    "nama": "Sambal Abc Sachet 8G",
+    "harga": 8000,
+    "satuan": "pak"
+  },
+  {
+    "id": "SAR01",
+    "nama": "Palapa 155G",
+    "harga": 10500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SAR03",
+    "nama": "Sardine Abc 425Gr",
+    "harga": 25000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI021",
+    "nama": "Sari Gandum Coklat Box 36Gr",
+    "harga": 1692,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SK002",
+    "nama": "Susu Enak Coklat Kaleng 370G",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SOS02",
+    "nama": "Sosis Ayam 21G",
+    "harga": 21000,
+    "satuan": "pak"
+  },
+  {
+    "id": "SK001",
+    "nama": "Susu Enak Putih Kaleng 370G",
+    "harga": 10782,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE05",
+    "nama": "Tepung Sajiku Serbaguna 210Gr",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI004",
+    "nama": "Minyak Fortune 500Ml",
+    "harga": 11000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI005",
+    "nama": "Minyak Fortune 250Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART50",
+    "nama": "Peniti Besar",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SAO3",
+    "nama": "Sambal Abc Botol 270Ml",
+    "harga": 13500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SAO4",
+    "nama": "Sambal Tomat 270Ml",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SK007",
+    "nama": "Krimer Km Milk Barn",
+    "harga": 25000,
+    "satuan": "pak"
+  },
+  {
+    "id": "KE011",
+    "nama": "Kecap Bango 18Ml/25Gr",
+    "harga": 11500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "KE012",
+    "nama": "Kecap Bango 59Ml/77G",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "KE013",
+    "nama": "Kecap Bango 200Ml/265Gr",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS08",
+    "nama": "Kopi Jahe Sachet",
+    "harga": 17000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "KE015",
+    "nama": "Kecap Bango 520Gr/700Gr",
+    "harga": 23500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS09",
+    "nama": "Susu Jahe Sachet",
+    "harga": 17000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "MS10",
+    "nama": "Luwak White Coffe",
+    "harga": 17000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "CI01",
+    "nama": "Bonbon Coklat",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI02",
+    "nama": "Bonbon Vanila",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS12",
+    "nama": "Energen Vanila 34Gr",
+    "harga": 21000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "CI03",
+    "nama": "Saltcheese 200G",
+    "harga": 10500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI04",
+    "nama": "Biskuit Rose Cream",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI05",
+    "nama": "Rose Coklat",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI08",
+    "nama": "Hatari Cream Crackers",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS11",
+    "nama": "Energen Coklat 34Gr",
+    "harga": 21000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "20296",
+    "nama": "Guribee Bbq Balado 65Gr",
+    "harga": 7500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART07",
+    "nama": "Gayung Sp 24",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART06",
+    "nama": "Gayung Soft Koi 35",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART08",
+    "nama": "Gayung Dx Wrn 45",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BI02",
+    "nama": "Bihun Jagung Kecil",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "KT01",
+    "nama": "Kacang Tanah C Super 1/2Kg",
+    "harga": 17500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BI01",
+    "nama": "Bihun Jagung Besar 300G",
+    "harga": 7500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI27",
+    "nama": "Taro Kecil 2000",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SM001",
+    "nama": "Mothers Choice 1Kg",
+    "harga": 31500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SN01",
+    "nama": "Sandal Converse Uk 38/42",
+    "harga": 16500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PR02",
+    "nama": "Permen Tamarin",
+    "harga": 7500,
+    "satuan": "pak"
+  },
+  {
+    "id": "SG01",
+    "nama": "Sikat Gigi Formula",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MN01",
+    "nama": "Blueband Serbaguna 200Gr",
+    "harga": 9500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS14",
+    "nama": "Energen Jahe 34Gr",
+    "harga": 21000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "MB01",
+    "nama": "Good Day Botol Original Capuccino 250Ml",
+    "harga": 5209,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS13",
+    "nama": "Energen Kacang Hijau 34Gr",
+    "harga": 21000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "MS15",
+    "nama": "Energen Kurma Sachet",
+    "harga": 25000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "AC149",
+    "nama": "Tomat Dua Belibis 335Ml",
+    "harga": 14500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PR01",
+    "nama": "Permen Kiss Ungu",
+    "harga": 7500,
+    "satuan": "pak"
+  },
+  {
+    "id": "NJ01",
+    "nama": "Nutrijel All Varian",
+    "harga": 4334,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART02",
+    "nama": "Sikat Panci",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "N006",
+    "nama": "Zee Twist All Varian",
+    "harga": 33000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "GU04",
+    "nama": "Gula Gmp 1Kg",
+    "harga": 18500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SG02",
+    "nama": "Ciptadent Tb Flexi Soft Single Pr",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SG03",
+    "nama": "Ciptadent Tb Crystal Clean Soft Single",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "JA04",
+    "nama": "Jagung Belah 3 10Kg",
+    "harga": 95000,
+    "satuan": "pak"
+  },
+  {
+    "id": "GU02",
+    "nama": "Gula Pns Timbang 1 Kg",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM04",
+    "nama": "Nu Teh Tarik 330Ml",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SOS01",
+    "nama": "Sosis Sapi 21G",
+    "harga": 18667,
+    "satuan": "pak"
+  },
+  {
+    "id": "127867",
+    "nama": "Sgm Eksplor 1+Vanila  150Gr",
+    "harga": 17500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SU004",
+    "nama": "Tepung Roti Campur Intirasaku 1/2 Kg",
+    "harga": 8000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART01",
+    "nama": "Wiper Pottens 0001 19",
+    "harga": 25000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM09",
+    "nama": "Nu Milk Tea 330Ml",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MN03",
+    "nama": "Agar-Agar Powder Swallow Globe Merah",
+    "harga": 3960,
+    "satuan": "pcs"
+  },
+  {
+    "id": "127853",
+    "nama": "Sgm Ananda 1 150Gr",
+    "harga": 17500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "127855",
+    "nama": "Sgm Ananda 1 (0-6 Bulan) 400Gr",
+    "harga": 48400,
+    "satuan": "pcs"
+  },
+  {
+    "id": "127859",
+    "nama": "Sgm Ananda 2  (6-12 Bulan) 150Gr",
+    "harga": 17500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "BE09",
+    "nama": "Beras 118 Super 5Kg",
+    "harga": 78000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ME011",
+    "nama": "Pop Mie Lapeer Rasa Kari Ayam",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ME012",
+    "nama": "Pop Mie Pedas Dower",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK003",
+    "nama": "Rokok Sampoerna Mild Menthol Burst",
+    "harga": 37000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK10",
+    "nama": "Cimory Uht 250Ml All Varian",
+    "harga": 5625,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MZN01",
+    "nama": "Maizenaku 1Kg",
+    "harga": 23000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI29",
+    "nama": "Krisbee Fries Kentang Goreng 65Gr",
+    "harga": 7500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "EK163",
+    "nama": "Calf Serbaguna 200Gr",
+    "harga": 10200,
+    "satuan": "pcs"
+  },
+  {
+    "id": "GM034",
+    "nama": "Galetto Dark 250Gr",
+    "harga": 17500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "VIZ01",
+    "nama": "Air Minum Viz 1500Ml",
+    "harga": 1605,
+    "satuan": "pcs"
+  },
+  {
+    "id": "VIZ02",
+    "nama": "Air Minum Viz Mini 220Ml X 24Pc",
+    "harga": 1250,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC015",
+    "nama": "Cuka Dua Belibis 150Ml",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "60903",
+    "nama": "Daia Powder Det Floral 470Gr+ 25G",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SM039",
+    "nama": "Mothers C Butter Blend 200Gr",
+    "harga": 15500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM05",
+    "nama": "Nu Hazel Choco Hazeltea 330Ml",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM03",
+    "nama": "Nu Green Tea Ori 450Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "127860",
+    "nama": "Sgm Ananda 2  (6-12 Bulan) 400Gr",
+    "harga": 46500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI78",
+    "nama": "Roma Kelapa Cream Vanilla 174G",
+    "harga": 11000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI50",
+    "nama": "Roma Arden Chocosplendid 27G",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI74",
+    "nama": "Roma Sandwichi Chochlate 157G",
+    "harga": 8000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI73",
+    "nama": "Roma Sandwichi Peanut 157G",
+    "harga": 8000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "GRD1",
+    "nama": "Garam Dapur",
+    "harga": 663,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP13",
+    "nama": "Confidence Pants Daily Fresh L",
+    "harga": 24000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "PMP15",
+    "nama": "Confidence Pants Daily Fresh Xl",
+    "harga": 28000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "PMP14",
+    "nama": "Conifidence Pants Daily Fresh M",
+    "harga": 20000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "PMP17",
+    "nama": "Softex Maternity 45Cm",
+    "harga": 22990,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP24",
+    "nama": "Dr.P Ceria \"L\" Pants",
+    "harga": 60000,
+    "satuan": "box"
+  },
+  {
+    "id": "PMP23",
+    "nama": "Dr.P Ceria \"M\" Pants",
+    "harga": 55000,
+    "satuan": "box"
+  },
+  {
+    "id": "SK004",
+    "nama": "Frisian  Flag Coklat 545Gr",
+    "harga": 17000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK21",
+    "nama": "Ultramilk Full Cream 1000Ml",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM06",
+    "nama": "Nu Matcha Lattea 330Ml",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI90",
+    "nama": "Kotak-Kotak Mainan",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART43",
+    "nama": "Gunting Ladupop 44",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB04",
+    "nama": "Cream Gelas Belimbing Kuning",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART34",
+    "nama": "Spon Punggung",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB10",
+    "nama": "Sehat Perisai 70Gr Mild Blue",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB16",
+    "nama": "Wow Dishwash Lime 240Ml",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI87",
+    "nama": "Owls Egg",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB03",
+    "nama": "Wow Dishwash Reff 700Ml",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS25",
+    "nama": "Kopi Timbang 1/2 Kg",
+    "harga": 11000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI93",
+    "nama": "Nabati Waffer All Varian 37G",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "OB07",
+    "nama": "Paramex",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "OB08",
+    "nama": "Mixagrip Flu",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "OB10",
+    "nama": "Inza",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1010513",
+    "nama": "Mama Lemon Jeruk Nipis Pch 105Ml",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "A010",
+    "nama": "Sirup Marjan Merah Cocopandan",
+    "harga": 22000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB20",
+    "nama": "Belau Cuci",
+    "harga": 5000,
+    "satuan": "pak"
+  },
+  {
+    "id": "PMP22",
+    "nama": "Meries Xl18",
+    "harga": 53000,
+    "satuan": "pak"
+  },
+  {
+    "id": "TE12",
+    "nama": "Tepung Gandum Payung Timbang 1Kg",
+    "harga": 8500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE16",
+    "nama": "Tepung Gandum Payung Timbang 1/2 Kg",
+    "harga": 4500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TE13",
+    "nama": "Kacang Hijau 1Kg",
+    "harga": 27500,
+    "satuan": "gram"
+  },
+  {
+    "id": "TE15",
+    "nama": "Tepung Mila 1Kg",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ME018",
+    "nama": "Mie Lombok",
+    "harga": 10000,
+    "satuan": "pak"
+  },
+  {
+    "id": "ME019",
+    "nama": "Mie Atom",
+    "harga": 10000,
+    "satuan": "pak"
+  },
+  {
+    "id": "TI04",
+    "nama": "Tisue Nice 360",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SAO5",
+    "nama": "Saos Melewis As Hot N Hot 1Kg",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP18",
+    "nama": "Softex Daun Sirih",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MN02",
+    "nama": "Agar-Agar Powder Swallow Globe Putih",
+    "harga": 3960,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TI03",
+    "nama": "Tisue Biorse 250 S (M)",
+    "harga": 9500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB15",
+    "nama": "Mori Pw Blue 700Gr",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB05",
+    "nama": "Detergent B29 Pw 200Gr S.Pink",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB06",
+    "nama": "Medisoft Mosprep Ltn Lemon Green Oil 100",
+    "harga": 9900,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB07",
+    "nama": "Medisoft Mosprep Ltn Rosemary Oil 100",
+    "harga": 9900,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB08",
+    "nama": "Pewangi+Pelicin Joyful Vibes Banded Kris",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB09",
+    "nama": "Pewangi+Pelicin Sweet Scent Banded Kris",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB11",
+    "nama": "Sehat Perisai 70Gr Red Protect",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB12",
+    "nama": "Ayu Pop Rose Red",
+    "harga": 2500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB13",
+    "nama": "Ayu Pop Pepaya Orenge",
+    "harga": 2500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB14",
+    "nama": "Ayu Pop Jasmine Green",
+    "harga": 2500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP19",
+    "nama": "Meries L28",
+    "harga": 56500,
+    "satuan": "pak"
+  },
+  {
+    "id": "ART42",
+    "nama": "Peniti Kecil",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART38",
+    "nama": "Jarum Jahit",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI003",
+    "nama": "Minyak Fortune 1L",
+    "harga": 22500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM08",
+    "nama": "Nu Ice Lychee Tea 450Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP10",
+    "nama": "Lampu Led T Bulb 20W 15",
+    "harga": 22000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RG01",
+    "nama": "Regulator Hms50 54/3",
+    "harga": 67500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RG02",
+    "nama": "Regulator Com U 12Rm 118",
+    "harga": 147500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RG03",
+    "nama": "Regulator Gr301 83/3",
+    "harga": 105000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RG04",
+    "nama": "Regulator Sct 12Rm 126",
+    "harga": 157500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP11",
+    "nama": "Lampu  Led T Bulb 30W 22",
+    "harga": 30000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB01",
+    "nama": "Cream Pot 430Gr",
+    "harga": 9000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART44",
+    "nama": "Gunting Ladupop 185 Uk78",
+    "harga": 8000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI81",
+    "nama": "Oreo Kue",
+    "harga": 166,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI82",
+    "nama": "Nyam-Nyam",
+    "harga": 166,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI83",
+    "nama": "Momogi 4.5Gr",
+    "harga": 20,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI84",
+    "nama": "Momogi 120Gr",
+    "harga": 100,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI85",
+    "nama": "Chocolatos 500",
+    "harga": 438,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI88",
+    "nama": "Stik Bawang",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI89",
+    "nama": "Mary Queen Chocolate",
+    "harga": 875,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI91",
+    "nama": "Bella Crispy Cereal",
+    "harga": 875,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART48",
+    "nama": "Amplop Paperline",
+    "harga": 165,
+    "satuan": "pcs"
+  },
+  {
+    "id": "KE001",
+    "nama": "Kecap Guna 520Ml",
+    "harga": 13500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART49",
+    "nama": "Hansaplast 100",
+    "harga": 330,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TI06",
+    "nama": "Minyak Kayu Putih 60Ml",
+    "harga": 24500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB27",
+    "nama": "Lux Bw Magical Orciiid Pcii 85G",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB28",
+    "nama": "Lux Bw Soft Rose Pch 85G",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SB21",
+    "nama": "Deterjen Sayang Bbk 220Gr Buy 2 Get 1",
+    "harga": 10000,
+    "satuan": "rtg"
+  },
+  {
+    "id": "SB22",
+    "nama": "Deterjen Sayang Liquid",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SAO6",
+    "nama": "Saos Me Lewieschili A4 1Kg",
+    "harga": 13000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "WP06",
+    "nama": "Wipol Karbol Lemon Pch Rl 730G",
+    "harga": 14500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "WP07",
+    "nama": "Wipol Karbol Lemon Rl 190G",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "WP01",
+    "nama": "Wipol Karbol Cemara Btl Mdf 430G",
+    "harga": 12500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SK005",
+    "nama": "Frisian Flag Gold 490G",
+    "harga": 24000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CAP LANG 150ml",
+    "nama": "Telon Lang 150Ml",
+    "harga": 68000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LILIN",
+    "nama": "Bober Lilin",
+    "harga": 1750,
+    "satuan": "pcs"
+  },
+  {
+    "id": "NJ02",
+    "nama": "Nutrijel Coklat 30G",
+    "harga": 5209,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI92",
+    "nama": "My Sweet Cock Gummy 10G",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SAR02",
+    "nama": "Palapa 425G",
+    "harga": 24000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART46",
+    "nama": "Gunting Emido Besar 94",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060872",
+    "nama": "Daia Powder Romantic Pink 800 Gr",
+    "harga": 16500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PPRONAS 198g",
+    "nama": "Pronas Corned Beef 198G",
+    "harga": 25000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MILK BRAND",
+    "nama": "Milk Brand 2,5Kg",
+    "harga": 55000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MILK BREND",
+    "nama": "Milk Brend  1Kg",
+    "harga": 24500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART09",
+    "nama": "Keranjang Sampah Super Jme",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART11",
+    "nama": "Keranjang Clover Dustbin 1159.5",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART10",
+    "nama": "Keranjang Sampah Sn Super",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LEM",
+    "nama": "Lem Atico",
+    "harga": 2000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CAP LANG",
+    "nama": "Minyak Kayu Putih",
+    "harga": 40000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP21",
+    "nama": "Meries S 26",
+    "harga": 45000,
+    "satuan": "pak"
+  },
+  {
+    "id": "OBAT",
+    "nama": "Mixagripe Herbal Greges",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "VITACIMIN",
+    "nama": "Vitacimin All Varian",
+    "harga": 2500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART45",
+    "nama": "Gunting Emido Kecil60",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI86",
+    "nama": "Chocolatos 1000",
+    "harga": 834,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ZP063",
+    "nama": "Abon Sapi Ratu",
+    "harga": 25000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MZN02",
+    "nama": "Maizenaku 150G",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060156",
+    "nama": "Soklin Pemutih Regular Btl 1Lt",
+    "harga": 12000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC018",
+    "nama": "Pasta Chocolate 25Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "KE014",
+    "nama": "Kecap Bango 540Gr/400Gr",
+    "harga": 19000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC025",
+    "nama": "Pasta Durian 25Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC042",
+    "nama": "Pasta Pisang Ambon 25Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC032",
+    "nama": "Pasta Mocca 25Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC046",
+    "nama": "Pasta Strawberry 25Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC093",
+    "nama": "Sp (K) 30Gr Koep-Koepo",
+    "harga": 8000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC088",
+    "nama": "Ovalet (K) 30Gr",
+    "harga": 8000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC063",
+    "nama": "Baking Powder 45Gr",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC091",
+    "nama": "Soda Kue 81Gr Koepo-Koepo",
+    "harga": 5500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC147",
+    "nama": "Sambal Dua Belibis 235Ml",
+    "harga": 13750,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC007",
+    "nama": "Sambal  Dua Belibis 535Ml",
+    "harga": 28600,
+    "satuan": "pcs"
+  },
+  {
+    "id": "GU01",
+    "nama": "Gula Psm 1Kg",
+    "harga": 18000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC005",
+    "nama": "Sambal  Dua Belibis Sachet",
+    "harga": 10500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI25",
+    "nama": "Roma Bonita Coklat",
+    "harga": 1695,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC002",
+    "nama": "Sambal Dua Belibis 1Kg",
+    "harga": 36300,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC011",
+    "nama": "Tomat Dua Belibis 135Ml",
+    "harga": 6600,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC012",
+    "nama": "Tomat Dua Belibis Sachet",
+    "harga": 7000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC148",
+    "nama": "Tomat Dua Belibis 235Ml",
+    "harga": 13000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC145",
+    "nama": "Sambal Belibis Value 200G",
+    "harga": 7500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC146",
+    "nama": "Sambal Belibis Value P.1K",
+    "harga": 25300,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM10",
+    "nama": "Nu Green Tea Madu 450Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SU003",
+    "nama": "Tepung Roti Campur Intirasaku 1 Kg",
+    "harga": 15999,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART25",
+    "nama": "Pengki Napoli Dragon 19.5",
+    "harga": 24500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART26",
+    "nama": "Sapu Apel Htm 12",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART27",
+    "nama": "Pengki Floren Dragon 15",
+    "harga": 19000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART29",
+    "nama": "Sapu Kembang Htm 13",
+    "harga": 16500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART30",
+    "nama": "Sapu Potens Y200 Ss 27",
+    "harga": 39000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART31",
+    "nama": "Sapu Sofia 17",
+    "harga": 22500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP02",
+    "nama": "Lampu Led A Bulb 40W 51",
+    "harga": 65000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP03",
+    "nama": "Lampu Led T  Bulb 60W 47",
+    "harga": 65000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART12",
+    "nama": "Wefer Air Florida Dragon 22",
+    "harga": 27000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART13",
+    "nama": "Sikat Lantai Potens R006 23.5",
+    "harga": 30000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP06",
+    "nama": "Lampu Led Prima 5W 16",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP05",
+    "nama": "Lampu Led Prima 7W 18",
+    "harga": 22500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART16",
+    "nama": "Sikat Wc Melodi Dragon 8",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART32",
+    "nama": "Sikat Wc Denada Dragon 9.5",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART17",
+    "nama": "Sikat Wc Barokah 78",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART18",
+    "nama": "Sikat Wc Bonita Dragon 4750",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART19",
+    "nama": "Folding Tabhita Stick 30 19/3",
+    "harga": 26500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART21",
+    "nama": "Folding Hanger Sparta 24 Sti",
+    "harga": 35000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART22",
+    "nama": "Folding Hanger Sparta 20 Sti",
+    "harga": 27500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART23",
+    "nama": "Folding Ls30 Gb23 48/3",
+    "harga": 60000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART24",
+    "nama": "Folding Ls24 Gb22 41",
+    "harga": 51000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP08",
+    "nama": "Lampu Led A Bulb 23W 23",
+    "harga": 30000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP09",
+    "nama": "Lampu Led A Bulb 12W 12",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART14",
+    "nama": "Mop Pel Cotton Potens Y600L",
+    "harga": 28000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC040",
+    "nama": "Pasta Pandan 25Ml",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC098",
+    "nama": "Perisa Vanila 20Gr Koepo-Koepo",
+    "harga": 8000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC003",
+    "nama": "Sambal Dua Belibis 335Ml",
+    "harga": 20000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "AC099",
+    "nama": "Koepo-Koepo Vaneli Crystal Sachet",
+    "harga": 1000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1020226",
+    "nama": "Food Kecap Sedap Spc Refil 725Gr",
+    "harga": 23000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "10790",
+    "nama": "Mama Lime Chrcoal Pch 230Ml",
+    "harga": 4000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060946",
+    "nama": "Giv White Body Wash Bengkoang Pch 60Ml",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI12",
+    "nama": "Beng - Beng Coklat 22 Gr",
+    "harga": 2096,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK08",
+    "nama": "Susu Tujuh Kurma 189Ml",
+    "harga": 8900,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK07",
+    "nama": "Susu Beruang Slim 189Ml",
+    "harga": 11000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PR03",
+    "nama": "Permen Kopiko",
+    "harga": 10500,
+    "satuan": "pak"
+  },
+  {
+    "id": "BE12",
+    "nama": "Beras Sphp Bulog",
+    "harga": 61000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "DAIRY",
+    "nama": "Dairy Champ 37G",
+    "harga": 6000,
+    "satuan": "pak"
+  },
+  {
+    "id": "CI24",
+    "nama": "Peanut Crackers Besar",
+    "harga": 13000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "62766",
+    "nama": "So Fresh Aroma Therapy Hot 10Ml",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "62765",
+    "nama": "So Fresh Aroma Therapy Eucalyptus",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "10603",
+    "nama": "Kodomo Shampoo Gel Blueberry  Btl 200Ml",
+    "harga": 14800,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART52",
+    "nama": "Jepit Ketiak",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART53",
+    "nama": "Cutter",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP05",
+    "nama": "Meries Xxl18",
+    "harga": 50000,
+    "satuan": "pak"
+  },
+  {
+    "id": "CI14",
+    "nama": "Kalpa",
+    "harga": 1667,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI95",
+    "nama": "Peanut Crackers Kecil",
+    "harga": 6500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ABC002",
+    "nama": "Battre Abc Remot",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1060355",
+    "nama": "Soklin Lantai Ungu Btl 800Ml",
+    "harga": 17600,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI026",
+    "nama": "Roma Bonita Keju Susu 30G",
+    "harga": 1695,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI016",
+    "nama": "Astor Single Box 12.5G",
+    "harga": 825,
+    "satuan": "pcs"
+  },
+  {
+    "id": "CI13",
+    "nama": "Superstar Full Chocolate",
+    "harga": 863,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1160923",
+    "nama": "Kopi Top White Rtg 21Gr",
+    "harga": 18500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "MK11",
+    "nama": "Cimory Youghert 125Ml",
+    "harga": 2650,
+    "satuan": "pcs"
+  },
+  {
+    "id": "KB002",
+    "nama": "Kuku Bima Jeruk",
+    "harga": 7500,
+    "satuan": "pak"
+  },
+  {
+    "id": "MK12",
+    "nama": "Extrajoss Klg 250Ml",
+    "harga": 5417,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK28",
+    "nama": "Cimory Yogurt Drink Bluberry 200Ml",
+    "harga": 3750,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MK29",
+    "nama": "Ultramilk Strbery 250Ml",
+    "harga": 6125,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK31",
+    "nama": "Rokok L.A Ice 16 Filter",
+    "harga": 34500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK32",
+    "nama": "Rokok Esse Change Double",
+    "harga": 43500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK34",
+    "nama": "Rokok Mustang Coffe 12 Kretek",
+    "harga": 17000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "RK33",
+    "nama": "Rokok Gudang Garam Gp",
+    "harga": 27000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SK006",
+    "nama": "Frisian Flag Putih 370G",
+    "harga": 13000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "SOS004",
+    "nama": "Sosis So Nice Sapi Pedas",
+    "harga": 746,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP11",
+    "nama": "Meries Pants M22",
+    "harga": 46500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "PMP20",
+    "nama": "Meries M32",
+    "harga": 50000,
+    "satuan": "pak"
+  },
+  {
+    "id": "MI009",
+    "nama": "Minyak Bimoli 2L",
+    "harga": 43000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP07",
+    "nama": "Lampu Led Prima 3W 13",
+    "harga": 16500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "LMP04",
+    "nama": "Lampu Led Prima 9W 20",
+    "harga": 25000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI010",
+    "nama": "Minyak Goreng Bimoli 1L",
+    "harga": 22000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI011",
+    "nama": "Minyak Goreng Sania 2L",
+    "harga": 43500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI001",
+    "nama": "Minyak Sunco 1L",
+    "harga": 25500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MI0010",
+    "nama": "Minyak Filma 1 Liter",
+    "harga": 20500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "GU05",
+    "nama": "Gula Psm 500Gr",
+    "harga": 10000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS26",
+    "nama": "Kopi Kingkong 400Gr",
+    "harga": 28000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "DAIRY1",
+    "nama": "Dairy Champ 2,5Kg",
+    "harga": 54063,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MS29",
+    "nama": "Kopi Kingkong Merah 200G",
+    "harga": 29000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MNM07",
+    "nama": "Nu Yogurt Tea 450Ml",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "127864",
+    "nama": "Sgm Eksplor 1+ Madu  150Gr",
+    "harga": 17500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "127865",
+    "nama": "Sgm Eksplor 1+ Madu  400Gr",
+    "harga": 42500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "127868",
+    "nama": "Sgm Eksplor 1+Vanila 400Gr",
+    "harga": 42500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "127872",
+    "nama": "Sgm Eksplor 3+ Madu 150Gr",
+    "harga": 16500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "TELUR",
+    "nama": "Telur Ayam Negri",
+    "harga": 1900,
+    "satuan": "pcs"
+  },
+  {
+    "id": "1120402",
+    "nama": "Kopi Top Moka Cino 22Gr",
+    "harga": 18500,
+    "satuan": "rtg"
+  },
+  {
+    "id": "10711",
+    "nama": "Kodomo Wet Wipes Pink Bag 50 Sht",
+    "harga": 10362,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART15",
+    "nama": "Pengki Potens 0001 12.5",
+    "harga": 15000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART20",
+    "nama": "Folding Hanger Sparta30 Sti",
+    "harga": 42500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "WP08",
+    "nama": "Wipol Up Sereh & Jeruk Pch Mdf Np 190G",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "WP04",
+    "nama": "Wipol Karbol Cemara Pch Pop 720G",
+    "harga": 27900,
+    "satuan": "pcs"
+  },
+  {
+    "id": "62377",
+    "nama": "Sokln Liquid Det Lavender Pch 525Ml",
+    "harga": 11500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "62433",
+    "nama": "Soklin Liquid Det Korea Cam Pch 525Ml",
+    "harga": 11500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MIE01",
+    "nama": "Indomie Goreng Spesial",
+    "harga": 2855,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MIE03",
+    "nama": "Indomie Ayam Bawang",
+    "harga": 2724,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ME010",
+    "nama": "Pop Mie Lapeer Rasa Ayam",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ME013",
+    "nama": "Pop Mie Goreng Rasa Indomie Goreng",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ME014",
+    "nama": "Pop Mie Lapeer Rasa Ayam Bawang",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ME015",
+    "nama": "Pop Mie Snek Baso",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ME016",
+    "nama": "Mie Telor Kuning",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ME017",
+    "nama": "Mie Telor Merah",
+    "harga": 6000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MIE06",
+    "nama": "Indomie Rasa Soto Mie",
+    "harga": 3500,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART39",
+    "nama": "Jarum Pentul Kotak",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART51",
+    "nama": "Jarum Pentol Bulat",
+    "harga": 3000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "ART47",
+    "nama": "Jepit Kuku",
+    "harga": 5000,
+    "satuan": "pcs"
+  },
+  {
+    "id": "MA001",
+    "nama": "Meises A8 Dark 1 Kg",
+    "harga": 33000,
+    "satuan": "pcs"
+  }
 ];
 
 let produkList = JSON.parse(localStorage.getItem('produk_sembako') || 'null') || PRODUK_DEFAULT;
@@ -786,15 +5142,47 @@ function ganti(halaman, el) {
 function renderProduk() {
   const q = document.getElementById('cari-produk').value.toLowerCase();
   const grid = document.getElementById('produk-grid');
-  const filtered = produkList.filter(p => p.nama.toLowerCase().includes(q));
-  grid.innerHTML = filtered.map(p => `
-    <div class="produk-card" onclick="tambahKeranjang('${p.id}')">
-      <div class="nama">${p.nama}</div>
-      <div class="satuan">per ${p.satuan}</div>
-      <div class="harga">${rp(p.harga)}</div>
-    </div>
-  `).join('');
+
+  if (!q) {
+    // Tampilkan best seller (4 produk) + semua produk
+    const bs = getBestSeller();
+    const rest = produkList.filter(p => !bs.find(b => b.id === p.id));
+    const bsHtml = bs.length ? `
+      <div style="grid-column:1/-1;font-size:11px;font-weight:700;color:var(--emas);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">⭐ Best Seller</div>
+      ${bs.map(p => produkCard(p, true)).join('')}
+      <div style="grid-column:1/-1;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin:4px 0 2px">Semua Produk</div>
+    ` : '';
+    grid.innerHTML = bsHtml + rest.map(p => produkCard(p, false)).join('');
+  } else {
+    const filtered = produkList.filter(p => p.nama.toLowerCase().includes(q));
+    grid.innerHTML = filtered.map(p => produkCard(p, false)).join('');
+  }
 }
+
+function produkCard(p, isBestSeller) {
+  return `<div class="produk-card${isBestSeller ? ' best-seller-card' : ''}" onclick="tambahKeranjang('${p.id}')">
+    ${isBestSeller ? '<div style="font-size:9px;color:var(--emas);font-weight:700;margin-bottom:2px">⭐ TERLARIS</div>' : ''}
+    <div class="nama">${p.nama}</div>
+    <div class="satuan">per ${p.satuan}</div>
+    <div class="harga">${rp(p.harga)}</div>
+  </div>`;
+}
+
+function getBestSeller() {
+  // Ambil dari riwayat cache, hitung frekuensi per produk
+  const riwayat = window._riwayatCache || [];
+  const freq = {};
+  riwayat.forEach(r => {
+    (r.items||[]).forEach(item => {
+      const nama = item.split(' x')[0];
+      freq[nama] = (freq[nama] || 0) + 1;
+    });
+  });
+  // Sort by frequency, ambil 4 teratas
+  const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,4).map(e => e[0]);
+  return produkList.filter(p => sorted.includes(p.nama)).slice(0,4);
+}
+
 
 function tambahKeranjang(id) {
   const p = produkList.find(x => x.id === id);
@@ -1167,9 +5555,10 @@ function updateWaktu() {
 }
 
 // INIT
-// Init dipindah ke DOMContentLoaded (lihat bawah)
+// init dipindah ke Firebase loader
 
-// ===================== FIREBASE CONFIG =====================
+
+// ============ FIREBASE CONFIG ============
 const firebaseConfig = {
   apiKey: "AIzaSyDfcHWx_u2XfsFOe-x5H9UYd0TBsoaicww",
   authDomain: "kasir-sembako-7455b.firebaseapp.com",
@@ -1178,47 +5567,24 @@ const firebaseConfig = {
   messagingSenderId: "759534521227",
   appId: "1:759534521227:web:8be871baaaa4b463d33d8e"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Status koneksi
+// Status badge
 const badge = document.getElementById('status-badge');
-db.enableNetwork().then(() => {
-  badge.textContent = 'ONLINE';
-  badge.style.background = '#16a34a';
-}).catch(() => {
-  badge.textContent = 'OFFLINE';
-  badge.style.background = '#f59e0b';
-});
+db.collection('_ping').limit(1).get()
+  .then(() => { badge.textContent = 'ONLINE'; badge.style.background = '#16a34a'; })
+  .catch(() => { badge.textContent = 'OFFLINE'; badge.style.background = '#f59e0b'; });
 
-// ===================== FIREBASE HELPERS =====================
-
-// Simpan produk ke Firestore
-async function simpanProdukFS() {
-  try {
-    const batch = db.batch();
-    produkList.forEach(p => {
-      const ref = db.collection('produk').doc(String(p.id));
-      batch.set(ref, p);
-    });
-    await batch.commit();
-  } catch(e) {
-    // fallback localStorage
-    localStorage.setItem('produksembako', JSON.stringify(produkList));
-  }
-}
-
-// Load produk dari Firestore
+// ============ FIREBASE: PRODUK ============
 async function loadProdukFS() {
   try {
     const snap = await db.collection('produk').get();
     if (!snap.empty) {
       produkList = snap.docs.map(d => d.data());
     } else {
-      // Jika Firestore kosong, upload default
       produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
-      simpanProdukFS();
+      await uploadProdukFS();
     }
   } catch(e) {
     produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
@@ -1227,8 +5593,34 @@ async function loadProdukFS() {
   renderProdukManager();
 }
 
-// Simpan riwayat ke Firestore
-async function simpanRiwayatFS(nota) {
+async function uploadProdukFS() {
+  const batch = db.batch();
+  produkList.forEach(p => {
+    batch.set(db.collection('produk').doc(String(p.id)), p);
+  });
+  await batch.commit();
+}
+
+// Override simpanProdukLS agar juga simpan ke Firebase
+function simpanProdukLS() {
+  localStorage.setItem('produksembako', JSON.stringify(produkList));
+  try {
+    uploadProdukFS();
+  } catch(e) {}
+}
+
+// Override hapusProduk agar juga hapus dari Firebase
+function hapusProduk(id) {
+  if (!confirm('Hapus produk ini?')) return;
+  produkList = produkList.filter(x => x.id !== id);
+  simpanProdukLS();
+  try { db.collection('produk').doc(String(id)).delete(); } catch(e) {}
+  renderProdukManager();
+  renderProduk();
+}
+
+// ============ FIREBASE: RIWAYAT ============
+async function simpanRiwayat(nota) {
   const total = keranjang.reduce((s,x) => s + x.harga * x.qty, 0);
   const data = {
     id: nomorTransaksi,
@@ -1241,61 +5633,32 @@ async function simpanRiwayatFS(nota) {
   };
   try {
     await db.collection('riwayat').doc(String(nomorTransaksi)).set(data);
-    nomorTransaksi++;
-    localStorage.setItem('notransaksi', nomorTransaksi);
   } catch(e) {
-    // fallback localStorage
     const riwayat = JSON.parse(localStorage.getItem('riwayatsembako')) || [];
     riwayat.unshift(data);
     if (riwayat.length > 100) riwayat.pop();
     localStorage.setItem('riwayatsembako', JSON.stringify(riwayat));
-    nomorTransaksi++;
-    localStorage.setItem('notransaksi', nomorTransaksi);
   }
-}
-
-// Load riwayat dari Firestore
-async function loadRiwayatFS() {
-  try {
-    const snap = await db.collection('riwayat').orderBy('waktu','desc').limit(100).get();
-    return snap.docs.map(d => d.data());
-  } catch(e) {
-    return JSON.parse(localStorage.getItem('riwayatsembako')) || [];
-  }
-}
-
-// Hapus produk dari Firestore
-async function hapusProdukFS(id) {
-  try { await db.collection('produk').doc(String(id)).delete(); } catch(e) {}
-}
-
-// Hapus semua riwayat dari Firestore
-async function hapusRiwayatFS() {
-  try {
-    const snap = await db.collection('riwayat').get();
-    const batch = db.batch();
-    snap.docs.forEach(d => batch.delete(d.ref));
-    await batch.commit();
-  } catch(e) {}
-}
-
-// ===================== OVERRIDE FUNCTIONS =====================
-function simpanProdukLS() {
-  localStorage.setItem('produksembako', JSON.stringify(produkList));
-  simpanProdukFS();
-}
-
-function simpanRiwayat(nota) {
-  simpanRiwayatFS(nota);
+  nomorTransaksi++;
+  localStorage.setItem('notransaksi', nomorTransaksi);
 }
 
 async function renderRiwayat() {
-  const riwayat = await loadRiwayatFS();
+  let riwayat = [];
+  try {
+    const snap = await db.collection('riwayat').orderBy('waktu','desc').limit(100).get();
+    riwayat = snap.docs.map(d => d.data());
+  } catch(e) {
+    riwayat = JSON.parse(localStorage.getItem('riwayatsembako')) || [];
+  }
+  window._riwayatCache = riwayat;
+
   const hari = new Date().toDateString();
   const totalHari = riwayat
     .filter(r => new Date(r.waktu).toDateString() === hari)
     .reduce((s,r) => s + r.total, 0);
   document.getElementById('total-harian').textContent = rp(totalHari);
+
   const list = document.getElementById('riwayat-list');
   if (!riwayat.length) {
     list.innerHTML = '<div style="text-align:center;padding:40px;color:#888">Belum ada transaksi</div>';
@@ -1312,12 +5675,10 @@ async function renderRiwayat() {
         <button class="btn-resend" style="flex:1;margin-top:0" onclick="kirimUlang(${r.id})">Kirim WA</button>
       </div>
     </div>`).join('');
-  window._riwayatCache = riwayat;
 }
 
 function lihatDetailRiwayat(id) {
-  const riwayat = window._riwayatCache || [];
-  const r = riwayat.find(x => x.id == id);
+  const r = (window._riwayatCache||[]).find(x => x.id == id);
   if (!r) return;
   detailAktif = r;
   document.getElementById('detail-judul').textContent = 'Nota #' + String(r.id).padStart(4,'0');
@@ -1326,42 +5687,135 @@ function lihatDetailRiwayat(id) {
 }
 
 function kirimUlang(id) {
-  const riwayat = window._riwayatCache || [];
-  const r = riwayat.find(x => x.id == id);
+  const r = (window._riwayatCache||[]).find(x => x.id == id);
   if (!r) return;
-  const no = r.noWa ? r.noWa.replace(/\D/g,'') : '';
-  let noF = no;
-  if (no.startsWith('0')) noF = '62' + no.slice(1);
+  const no = (r.noWa||'').replace(/\D/g,'');
+  let noF = no.startsWith('0') ? '62'+no.slice(1) : no;
   const url = noF
     ? `https://wa.me/${noF}?text=${encodeURIComponent(r.nota)}`
     : `https://wa.me/?text=${encodeURIComponent(r.nota)}`;
-  window.open(url, '_blank');
+  window.open(url,'_blank');
 }
 
 async function hapusRiwayat() {
   if (!confirm('Hapus semua riwayat transaksi?')) return;
-  await hapusRiwayatFS();
+  try {
+    const snap = await db.collection('riwayat').get();
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  } catch(e) {}
   localStorage.removeItem('riwayatsembako');
   localStorage.removeItem('notransaksi');
   nomorTransaksi = 1;
   renderRiwayat();
 }
 
-function hapusProduk(id) {
-  if (!confirm('Hapus produk ini?')) return;
-  produkList = produkList.filter(x => x.id !== id);
-  simpanProdukLS();
-  hapusProdukFS(id);
-  renderProdukManager();
-  renderProduk();
+// ============ INIT ============
+loadProdukFS();
+updateWaktu();
+setInterval(updateWaktu, 30000);
+
+
+// ============ IMPORT XLSX iPOS ============
+function importXLSX(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      // Pakai SheetJS untuk baca XLSX
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: ''});
+
+      let imported = 0;
+      const newProduk = [];
+
+      for (let i = 2; i < rows.length; i++) {
+        const row = rows[i];
+        const kode = String(row[0]||'').trim();
+        const nama = String(row[2]||'').trim();
+        const satuan = String(row[5]||'pcs').trim().toLowerCase();
+        const hargaJual = parseFloat(row[7]) || 0;
+
+        if (!kode || !nama || hargaJual === 0) continue;
+        if (nama.startsWith('---') || kode === 'KODEITEM') continue;
+
+        newProduk.push({
+          id: kode,
+          nama: nama.charAt(0).toUpperCase() + nama.slice(1).toLowerCase(),
+          harga: Math.round(hargaJual),
+          satuan: satuan
+        });
+        imported++;
+      }
+
+      if (imported === 0) { alert('Tidak ada data yang bisa diimport!'); return; }
+
+      if (!confirm(`Ditemukan ${imported} produk dari file XLSX.\nLanjutkan import? (Produk lama akan DIGANTI)`)) return;
+
+      produkList = newProduk;
+      simpanProdukLS();
+      renderProduk();
+      renderProdukManager();
+      alert(`✅ Berhasil import ${imported} produk ke Firebase!`);
+    } catch(err) {
+      alert('Gagal import: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  input.value = '';
 }
 
-// Init Firebase setelah DOM siap
-window.addEventListener('DOMContentLoaded', () => {
-  loadProdukFS();
-  updateWaktu();
-  setInterval(updateWaktu, 30000);
-});
+
+// ============ RESET PRODUK ============
+async function resetProdukDefault() {
+  if (!confirm('Reset semua produk ke data default dari XLSX?\nProduk yang sudah ditambah manual akan hilang!')) return;
+  produkList = [...PRODUK_DEFAULT];
+  simpanProdukLS();
+  renderProduk();
+  renderProdukManager();
+  alert('✅ Produk berhasil direset ke default (' + produkList.length + ' produk)');
+}
+
+// ============ SIMPAN PDF ============
+function simpanPDF() {
+  if (!detailAktif) return;
+  const noStr = String(detailAktif.id).padStart(4,'0');
+  const el = document.getElementById('detail-teks');
+  const opt = {
+    margin: 10,
+    filename: 'nota-' + noStr + '.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a6', orientation: 'portrait' }
+  };
+  // Buat div sementara dengan format cantik
+  const div = document.createElement('div');
+  div.style.cssText = 'font-family:Courier New,monospace;font-size:11px;padding:10px;white-space:pre-wrap;line-height:1.8;color:#111';
+  div.textContent = detailAktif.nota;
+  document.body.appendChild(div);
+  html2pdf().set(opt).from(div).save().then(() => {
+    document.body.removeChild(div);
+  });
+}
+
+function cetakPDF() {
+  const struk = document.querySelector('#nota-modal .struk');
+  if (!struk) return;
+  const noStr = String(nomorTransaksi-1).padStart(4,'0');
+  const opt = {
+    margin: 0,
+    filename: 'nota-' + noStr + '.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: [80, 150], orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(struk).save();
+}
+
 </script>
 </body>
 </html>
