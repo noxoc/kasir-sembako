@@ -1448,24 +1448,31 @@ db.collection('_ping').limit(1).get()
 // ============ FIREBASE: PRODUK ============
 async function loadProdukFS() {
   try {
-    const snap = await db.collection('produk').get();
+    // Paksa baca dari server Firebase, bukan cache browser
+    const snap = await db.collection('produk').get({ source: 'server' });
     if (!snap.empty) {
-      // Ada data di Firebase, pakai itu
       produkList = snap.docs.map(d => d.data());
+      localStorage.setItem('produk_direset', 'false');
     } else {
-      // Firebase kosong — cek apakah memang sengaja dikosongkan
+      // Firebase kosong
       const sudahDireset = localStorage.getItem('produk_direset');
       if (sudahDireset === 'true') {
-        // Sengaja dikosongkan, jangan upload default
         produkList = [];
       } else {
-        // Belum pernah diisi, upload default pertama kali
+        // Pertama kali — upload default
         produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
         await uploadProdukFS();
+        localStorage.setItem('produk_direset', 'false');
       }
     }
   } catch(e) {
-    produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
+    // Offline — pakai localStorage
+    const sudahDireset = localStorage.getItem('produk_direset');
+    if (sudahDireset === 'true') {
+      produkList = [];
+    } else {
+      produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
+    }
   }
   renderProduk();
   renderProdukManager();
@@ -1654,31 +1661,32 @@ function importXLSX(input) {
 async function resetProdukDefault() {
   if (!confirm('⚠️ HAPUS SEMUA PRODUK?\nSemua data produk akan dihapus permanen.\nLanjutkan?')) return;
 
-  // Kosongkan dulu langsung
-  produkList = [];
+  // Set flag DULU sebelum apapun
   localStorage.removeItem('produksembako');
   localStorage.setItem('produk_direset', 'true');
+  produkList = [];
   renderProduk();
   renderProdukManager();
 
-  // Hapus dari Firebase (background)
+  // Hapus dari Firebase satu per satu (lebih reliable dari batch)
   try {
-    const snap = await db.collection('produk').get();
-    if (!snap.empty) {
-      // Hapus per 400 karena Firestore batch max 500
-      const docs = snap.docs;
-      for (let i = 0; i < docs.length; i += 400) {
-        const batch = db.batch();
-        docs.slice(i, i + 400).forEach(d => batch.delete(d.ref));
-        await batch.commit();
-      }
-    }
+    let total = 0;
+    const snap = await db.collection('produk').get({ source: 'server' }); // paksa baca dari server, bukan cache
+    total = snap.size;
+    const promises = snap.docs.map(d => d.ref.delete());
+    await Promise.all(promises);
+    console.log('Berhasil hapus', total, 'produk dari Firebase');
   } catch(e) {
     console.log('Firebase delete error:', e);
+    // Coba cara lain — tulis document kosong sebagai marker
+    try {
+      await db.collection('_meta').doc('produk_status').set({ kosong: true, waktu: Date.now() });
+    } catch(e2) {}
   }
 
-  alert('✅ Semua produk (' + 0 + ') berhasil dihapus!');
+  alert('✅ Semua produk berhasil dihapus! Silakan refresh halaman.');
 }
+
 
 
 // ============ SIMPAN PDF ============
