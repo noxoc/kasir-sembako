@@ -739,8 +739,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <!-- SheetJS untuk baca XLSX -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-  <!-- Firebase -->
-  
+  </script>
   
 </head>
 <body>
@@ -1106,7 +1105,7 @@ function konfirmasiHarga() {
 
   const simpan = document.getElementById('popup-simpan-harga').checked;
   if (simpan) {
-    // Simpan permanen ke produkList & Firebase
+    
     p.harga = harga;
     simpanProdukLS();
   }
@@ -1400,24 +1399,11 @@ function editProduk(id) {
   document.getElementById('form-tambah').scrollIntoView({behavior:'smooth'});
 }
 
-
 function simpanProduk() {
   const nama = document.getElementById('f-nama').value.trim();
   const harga = parseInt(document.getElementById('f-harga').value);
   const satuan = document.getElementById('f-satuan').value.trim();
   if (!nama || !harga || !satuan) { alert('Lengkapi semua data!'); return; }
-  if (editId) {
-    const idx = produkList.findIndex(x => x.id === editId);
-    produkList[idx] = { id: editId, nama, harga, satuan };
-  } else {
-    produkList.push({ id: Date.now().toString(), nama, harga, satuan });
-  }
-  localStorage.setItem('produksembako', JSON.stringify(produkList));
-  batalForm();
-  renderProdukManager();
-  renderProduk();
-}
-
   if (editId) {
     const idx = produkList.findIndex(x => x.id === editId);
     produkList[idx] = {id: editId, nama, harga, satuan};
@@ -1430,15 +1416,13 @@ function simpanProduk() {
   renderProduk();
 }
 
-
 function hapusProduk(id) {
   if (!confirm('Hapus produk ini?')) return;
   produkList = produkList.filter(x => x.id !== id);
-  localStorage.setItem('produksembako', JSON.stringify(produkList));
+  simpanProdukLS();
   renderProdukManager();
   renderProduk();
 }
-
 
 // === RIWAYAT ===
 function renderRiwayat() {
@@ -1532,203 +1516,8 @@ function updateWaktu() {
 }
 
 // INIT
-// init dipindah ke Firebase loader
 
 
-// ============ FIREBASE CONFIG ============
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// Status badge
-const badge = document.getElementById('status-badge');
-db.collection('_ping').limit(1).get()
-  .then(() => { badge.textContent = 'ONLINE'; badge.style.background = '#16a34a'; })
-  .catch(() => { badge.textContent = 'OFFLINE'; badge.style.background = '#f59e0b'; });
-
-// ============ FIREBASE: PRODUK ============
-async function loadProdukFS() {
-  try {
-    // Paksa baca dari server Firebase, bukan cache browser
-    const snap = await db.collection('produk').get({ source: 'server' });
-    if (!snap.empty) {
-      produkList = snap.docs.map(d => d.data());
-      localStorage.setItem('produk_direset', 'false');
-    } else {
-      // Firebase kosong
-      const sudahDireset = localStorage.getItem('produk_direset');
-      if (sudahDireset === 'true') {
-        produkList = [];
-      } else {
-        // Pertama kali — upload default
-        produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
-        await uploadProdukFS();
-        localStorage.setItem('produk_direset', 'false');
-      }
-    }
-  } catch(e) {
-    // Offline — pakai localStorage
-    const sudahDireset = localStorage.getItem('produk_direset');
-    if (sudahDireset === 'true') {
-      produkList = [];
-    } else {
-      produkList = JSON.parse(localStorage.getItem('produksembako')) || PRODUK_DEFAULT;
-    }
-  }
-  renderProduk();
-  renderProdukManager();
-}
-
-
-async function uploadProdukFS() {
-  const batch = db.batch();
-  produkList.forEach(p => {
-    batch.set(db.collection('produk').doc(String(p.id)), p);
-  });
-  await batch.commit();
-}
-
-// Override simpanProdukLS agar juga simpan ke Firebase
-function simpanProdukLS() {
-  localStorage.setItem('produksembako', JSON.stringify(produkList));
-  localStorage.setItem('produk_direset', 'false');
-  try {
-    uploadProdukFS();
-  } catch(e) {}
-}
-
-// Override hapusProduk agar juga hapus dari Firebase
-
-function hapusProduk(id) {
-  if (!confirm('Hapus produk ini?')) return;
-  produkList = produkList.filter(x => x.id !== id);
-  localStorage.setItem('produksembako', JSON.stringify(produkList));
-  renderProdukManager();
-  renderProduk();
-}
- catch(e) {}
-  renderProdukManager();
-  renderProduk();
-}
-
-// ============ FIREBASE: RIWAYAT ============
-async function simpanRiwayat(nota) {
-  const total = keranjang.reduce((s,x) => s + x.harga * x.qty, 0);
-  const data = {
-    id: nomorTransaksi,
-    waktu: Date.now(),
-    total,
-    nama: document.getElementById('input-nama').value.trim(),
-    items: keranjang.map(x => x.nama + ' x' + x.qty),
-    nota,
-    noWa: document.getElementById('input-wa').value
-  };
-  try {
-    await db.collection('riwayat').doc(String(nomorTransaksi)).set(data);
-  } catch(e) {
-    const riwayat = JSON.parse(localStorage.getItem('riwayatsembako')) || [];
-    riwayat.unshift(data);
-    if (riwayat.length > 100) riwayat.pop();
-    localStorage.setItem('riwayatsembako', JSON.stringify(riwayat));
-  }
-  nomorTransaksi++;
-  localStorage.setItem('notransaksi', nomorTransaksi);
-}
-
-async function renderRiwayat() {
-  let riwayat = [];
-  try {
-    const snap = await db.collection('riwayat').orderBy('waktu','desc').limit(100).get();
-    riwayat = snap.docs.map(d => d.data());
-  } catch(e) {
-    riwayat = JSON.parse(localStorage.getItem('riwayatsembako')) || [];
-  }
-  window._riwayatCache = riwayat;
-
-  const filterTanggal = document.getElementById('filter-tanggal')?.value;
-  const filterBulan = document.getElementById('filter-bulan')?.value;
-
-  if (filterTanggal) {
-    riwayat = riwayat.filter(r => {
-      const d = new Date(r.waktu);
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}` === filterTanggal;
-    });
-  } else if (filterBulan) {
-    riwayat = riwayat.filter(r => {
-      const d = new Date(r.waktu);
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      return `${yyyy}-${mm}` === filterBulan;
-    });
-  }
-
-  const hari = new Date().toDateString();
-  const totalHari = riwayat
-    .filter(r => new Date(r.waktu).toDateString() === hari)
-    .reduce((s,r) => s + r.total, 0);
-  document.getElementById('total-harian').textContent = rp(totalHari);
-
-  const list = document.getElementById('riwayat-list');
-  if (!riwayat.length) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:#888">Belum ada transaksi</div>';
-    return;
-  }
-  list.innerHTML = riwayat.map(r => `
-    <div class="riwayat-item">
-      <div class="waktu">${String(r.id).padStart(4,'0')} &bull; ${formatTanggal(r.waktu)}</div>
-      ${r.nama ? `<div style="font-size:13px;font-weight:600;margin:2px 0">${r.nama}</div>` : ''}
-      <div class="total">${rp(r.total)}</div>
-      <div class="items-preview">${r.items.join(', ')}</div>
-      <div style="display:flex;gap:6px;margin-top:8px">
-        <button class="btn-detail" style="flex:1" onclick="lihatDetailRiwayat(${r.id})">Lihat Nota</button>
-        <button class="btn-resend" style="flex:1;margin-top:0" onclick="kirimUlang(${r.id})">Kirim WA</button>
-      </div>
-    </div>`).join('');
-}
-
-function resetFilterRiwayat() {
-  document.getElementById('filter-tanggal').value = '';
-  document.getElementById('filter-bulan').value = '';
-  renderRiwayat();
-}
-
-
-function lihatDetailRiwayat(id) {
-  const r = (window._riwayatCache||[]).find(x => x.id == id);
-  if (!r) return;
-  detailAktif = r;
-  document.getElementById('detail-judul').textContent = 'Nota #' + String(r.id).padStart(4,'0');
-  document.getElementById('detail-teks').textContent = r.nota;
-  document.getElementById('detail-modal').style.display = 'flex';
-}
-
-function kirimUlang(id) {
-  const r = (window._riwayatCache||[]).find(x => x.id == id);
-  if (!r) return;
-  const no = (r.noWa||'').replace(/\D/g,'');
-  let noF = no.startsWith('0') ? '62'+no.slice(1) : no;
-  const url = noF
-    ? `https://wa.me/${noF}?text=${encodeURIComponent(r.nota)}`
-    : `https://wa.me/?text=${encodeURIComponent(r.nota)}`;
-  window.open(url,'_blank');
-}
-
-async function hapusRiwayat() {
-  if (!confirm('Hapus semua riwayat transaksi?')) return;
-  try {
-    const snap = await db.collection('riwayat').get();
-    const batch = db.batch();
-    snap.docs.forEach(d => batch.delete(d.ref));
-    await batch.commit();
-  } catch(e) {}
-  localStorage.removeItem('riwayatsembako');
-  localStorage.removeItem('notransaksi');
-  nomorTransaksi = 1;
-  renderRiwayat();
-}
 
 // ============ INIT ============
 loadProdukFS();
@@ -1779,7 +1568,7 @@ function importXLSX(input) {
       simpanProdukLS();
       renderProduk();
       renderProdukManager();
-      alert(`✅ Berhasil 
+
     } catch(err) {
       alert('Gagal import: ' + err.message);
     }
@@ -1800,19 +1589,19 @@ async function resetProdukDefault() {
   renderProduk();
   renderProdukManager();
 
-  // Hapus dari Firebase satu per satu (lebih reliable dari batch)
+
   try {
     let total = 0;
-    const snap = await db.collection('produk').get({ source: 'server' }); // paksa baca dari server, bukan cache
+    const snap = await db..get({ source: 'server' }); // paksa baca dari server, bukan cache
     total = snap.size;
     const promises = snap.docs.map(d => d.ref.delete());
     await Promise.all(promises);
-    console.log('Berhasil hapus', total, 'produk dari Firebase');
+
   } catch(e) {
-    console.log('Firebase delete error:', e);
+
     // Coba cara lain — tulis document kosong sebagai marker
     try {
-      await db.collection('_meta').doc('produk_status').set({ kosong: true, waktu: Date.now() });
+      await db...set({ kosong: true, waktu: Date.now() });
     } catch(e2) {}
   }
 
