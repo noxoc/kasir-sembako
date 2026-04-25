@@ -740,8 +740,8 @@
   <!-- SheetJS untuk baca XLSX -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  
+  
 </head>
 <body>
 
@@ -1400,11 +1400,24 @@ function editProduk(id) {
   document.getElementById('form-tambah').scrollIntoView({behavior:'smooth'});
 }
 
+
 function simpanProduk() {
   const nama = document.getElementById('f-nama').value.trim();
   const harga = parseInt(document.getElementById('f-harga').value);
   const satuan = document.getElementById('f-satuan').value.trim();
   if (!nama || !harga || !satuan) { alert('Lengkapi semua data!'); return; }
+  if (editId) {
+    const idx = produkList.findIndex(x => x.id === editId);
+    produkList[idx] = { id: editId, nama, harga, satuan };
+  } else {
+    produkList.push({ id: Date.now().toString(), nama, harga, satuan });
+  }
+  localStorage.setItem('produksembako', JSON.stringify(produkList));
+  batalForm();
+  renderProdukManager();
+  renderProduk();
+}
+
   if (editId) {
     const idx = produkList.findIndex(x => x.id === editId);
     produkList[idx] = {id: editId, nama, harga, satuan};
@@ -1417,13 +1430,15 @@ function simpanProduk() {
   renderProduk();
 }
 
+
 function hapusProduk(id) {
   if (!confirm('Hapus produk ini?')) return;
   produkList = produkList.filter(x => x.id !== id);
-  simpanProdukLS();
+  localStorage.setItem('produksembako', JSON.stringify(produkList));
   renderProdukManager();
   renderProduk();
 }
+
 
 // === RIWAYAT ===
 function renderRiwayat() {
@@ -1521,14 +1536,7 @@ function updateWaktu() {
 
 
 // ============ FIREBASE CONFIG ============
-const firebaseConfig = {
-  apiKey: "AIzaSyDfcHWx_u2XfsFOe-x5H9UYd0TBsoaicww",
-  authDomain: "kasir-sembako-7455b.firebaseapp.com",
-  projectId: "kasir-sembako-7455b",
-  storageBucket: "kasir-sembako-7455b.firebasestorage.app",
-  messagingSenderId: "759534521227",
-  appId: "1:759534521227:web:8be871baaaa4b463d33d8e"
-};
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
@@ -1582,7 +1590,7 @@ async function uploadProdukFS() {
 
 // Override simpanProdukLS agar juga simpan ke Firebase
 function simpanProdukLS() {
-  
+  localStorage.setItem('produksembako', JSON.stringify(produkList));
   localStorage.setItem('produk_direset', 'false');
   try {
     uploadProdukFS();
@@ -1590,11 +1598,15 @@ function simpanProdukLS() {
 }
 
 // Override hapusProduk agar juga hapus dari Firebase
+
 function hapusProduk(id) {
   if (!confirm('Hapus produk ini?')) return;
   produkList = produkList.filter(x => x.id !== id);
-  simpanProdukLS();
-  try { db.collection('produk').doc(String(id)).delete(); } catch(e) {}
+  localStorage.setItem('produksembako', JSON.stringify(produkList));
+  renderProdukManager();
+  renderProduk();
+}
+ catch(e) {}
   renderProdukManager();
   renderProduk();
 }
@@ -1767,7 +1779,7 @@ function importXLSX(input) {
       simpanProdukLS();
       renderProduk();
       renderProdukManager();
-      alert(`✅ Berhasil import ${imported} produk ke Firebase!`);
+      alert(`✅ Berhasil 
     } catch(err) {
       alert('Gagal import: ' + err.message);
     }
