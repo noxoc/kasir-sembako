@@ -1648,8 +1648,8 @@ function cetakPDF() {
 
 
 // ============ LOGIN / LOGOUT ============
-const PIN_BENAR = '1234'; // Ganti PIN di sini!
-const SESSION_KEY = 'kasir_session';
+const PIN_BENAR = '1234';
+const SESSION_KEY = "kasir_login_ok";
 
 function cekSession() {
   const s = sessionStorage.getItem(SESSION_KEY);
@@ -1659,7 +1659,7 @@ function cekSession() {
 }
 
 function doLogin() {
-  const pin = document.getElementById('pin-input').value;
+  const pin = document.getElementById('pin-input').value.trim();
   if (pin === PIN_BENAR) {
     sessionStorage.setItem(SESSION_KEY, 'ok');
     document.getElementById('login-screen').style.display = 'none';
